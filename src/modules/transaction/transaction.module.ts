@@ -8,17 +8,22 @@ import { CreateTransactionUsecase } from './application/usecase/create.transacti
 import { AccountRepository } from '../account/infrastructure/dataprovider/account.repository';
 import { AccountModule } from '../account/account.module';
 import AccountModel from '../account/infrastructure/models/account.model';
+import { TransactionListener } from './application/events/transaction.listener';
+import { CqrsModule, EventBus } from '@nestjs/cqrs';
 
 @Module({
   imports: [
     AccountModule,
     TypeOrmModule.forFeature([TransactionModel, AccountModel]),
+    CqrsModule,
   ],
   controllers: [TransactionController],
   providers: [
     CustomLogger,
     CreateTransactionUsecase,
     TransactionRepository,
+    TransactionListener,
+    EventBus,
     {
       provide: 'TransactionRepositoryInterface',
       useClass: TransactionRepository,
