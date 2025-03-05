@@ -12,10 +12,15 @@ import { JwtMiddleware } from './modules/middleware/jwt.middleware';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { TransactionController } from './modules/transaction/infrastructure/controller/transaction.controller';
+import { CreateTransactionTable1741200787558 } from './migration/1741200787558-CreateTransactionTable';
+import TransactionModel from './modules/transaction/infrastructure/models/transaction.model';
+import { TransactionModule } from './modules/transaction/transaction.module';
 
 @Module({
   imports: [
     AccountModule,
+    TransactionModule,
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -33,13 +38,16 @@ import { APP_GUARD } from '@nestjs/core';
       username: 'vinicius',
       password: 'vini@dev',
       database: 'financial_db',
-      entities: [AccountModel],
-      migrations: [CreateAccountTable1741108788820],
+      entities: [AccountModel, TransactionModel],
+      migrations: [
+        CreateAccountTable1741108788820,
+        CreateTransactionTable1741200787558,
+      ],
       // synchronize: true,
       logging: true,
     }),
   ],
-  controllers: [AppController, AccountController],
+  controllers: [AppController, AccountController, TransactionController],
   providers: [
     AppService,
     CustomLogger,
@@ -50,6 +58,8 @@ import { APP_GUARD } from '@nestjs/core';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddleware).forRoutes(AccountController);
+    consumer
+      .apply(JwtMiddleware)
+      .forRoutes(AccountController, TransactionController);
   }
 }

@@ -1,5 +1,12 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Account, AccountType } from '../../domain/entity/account.entity';
+import TransactionModel from 'src/modules/transaction/infrastructure/models/transaction.model';
 
 @Entity({ name: 'account' })
 export default class AccountModel extends BaseEntity {
@@ -23,6 +30,15 @@ export default class AccountModel extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   updated_at?: Date;
+
+  @OneToMany(() => TransactionModel, (transaction) => transaction.account)
+  transactions: TransactionModel[];
+
+  @OneToMany(
+    () => TransactionModel,
+    (transaction) => transaction.destination_account,
+  )
+  received_transactions: TransactionModel[];
 
   static mapToEntity(model: AccountModel): Account {
     const account = new Account(
