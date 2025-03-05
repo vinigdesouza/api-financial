@@ -1,22 +1,20 @@
-import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { TransactionProcessedEvent } from './transaction-created.event';
-import { AccountRepositoryInterface } from 'src/modules/account/domain/repository/account.repository.interface';
 import { Inject, Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import { TransactionProcessedEvent } from '../events/transaction-created.event';
+import { AccountRepositoryInterface } from 'src/modules/account/domain/repository/account.repository.interface';
 import { Account } from 'src/modules/account/domain/entity/account.entity';
 import { CustomLogger } from 'src/modules/shared/custom.logger';
 
 @Injectable()
-@EventsHandler(TransactionProcessedEvent)
-export class TransactionListener
-  implements IEventHandler<TransactionProcessedEvent>
-{
+export class TransactionListener {
   constructor(
     @Inject('AccountRepositoryInterface')
     private readonly accountRepository: AccountRepositoryInterface,
     private readonly logger: CustomLogger,
   ) {}
 
-  async handle(event: TransactionProcessedEvent) {
+  @OnEvent('transaction.processed')
+  async handleTransactionProcessed(event: TransactionProcessedEvent) {
     this.logger.log(
       `Handling TransactionProcessedEvent for account ${event.accountId}`,
     );

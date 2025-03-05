@@ -1,6 +1,4 @@
-import { IEvent } from '@nestjs/cqrs';
-
-export class TransactionProcessedEvent implements IEvent {
+export class TransactionProcessedEvent {
   constructor(
     public readonly accountId: string,
     public readonly amount: number,

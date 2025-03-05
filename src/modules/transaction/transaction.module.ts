@@ -9,21 +9,19 @@ import { AccountRepository } from '../account/infrastructure/dataprovider/accoun
 import { AccountModule } from '../account/account.module';
 import AccountModel from '../account/infrastructure/models/account.model';
 import { TransactionListener } from './application/events/transaction.listener';
-import { CqrsModule, EventBus } from '@nestjs/cqrs';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     AccountModule,
     TypeOrmModule.forFeature([TransactionModel, AccountModel]),
-    CqrsModule,
+    EventEmitterModule.forRoot(),
   ],
   controllers: [TransactionController],
   providers: [
     CustomLogger,
     CreateTransactionUsecase,
     TransactionRepository,
-    TransactionListener,
-    EventBus,
     {
       provide: 'TransactionRepositoryInterface',
       useClass: TransactionRepository,
@@ -32,6 +30,7 @@ import { CqrsModule, EventBus } from '@nestjs/cqrs';
       provide: 'AccountRepositoryInterface',
       useClass: AccountRepository,
     },
+    TransactionListener,
   ],
   exports: ['TransactionRepositoryInterface', CreateTransactionUsecase],
 })

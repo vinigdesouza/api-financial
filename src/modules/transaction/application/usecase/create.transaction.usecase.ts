@@ -11,8 +11,8 @@ import { Either, left, right } from 'src/modules/shared/either';
 import { AccountRepositoryInterface } from 'src/modules/account/domain/repository/account.repository.interface';
 import { AccountDoesNotExist } from 'src/modules/account/application/exceptions/AccountDoesNotExist';
 import { BalanceInsufficient } from '../exceptions/BalanceInsufficient';
-import { EventBus } from '@nestjs/cqrs';
 import { TransactionProcessedEvent } from '../events/transaction-created.event';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class CreateTransactionUsecase {
@@ -22,7 +22,7 @@ export class CreateTransactionUsecase {
     @Inject('AccountRepositoryInterface')
     private readonly accountRepository: AccountRepositoryInterface,
     private readonly logger: CustomLogger,
-    private readonly eventBus: EventBus,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async handle(
@@ -110,8 +110,14 @@ export class CreateTransactionUsecase {
       return left(transactionCreated.value);
     }
 
-    this.eventBus.publish(
-      new TransactionProcessedEvent(idAccount, amount, transactionType),
+    this.eventEmitter.emit(
+      'transaction.processed',
+      new TransactionProcessedEvent(
+        idAccount,
+        amount,
+        transactionType,
+        idAccountDestination,
+      ),
     );
 
     return right(transactionCreated.value);

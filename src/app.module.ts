@@ -1,6 +1,4 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { LoggerModule } from 'nestjs-pino';
 import { CustomLogger } from './modules/shared/custom.logger';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -47,9 +45,8 @@ import { TransactionModule } from './modules/transaction/transaction.module';
       logging: true,
     }),
   ],
-  controllers: [AppController, AccountController, TransactionController],
+  controllers: [AccountController, TransactionController],
   providers: [
-    AppService,
     CustomLogger,
     JwtMiddleware,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
