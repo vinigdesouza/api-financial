@@ -22,7 +22,6 @@ import { UpsertAccountRequest } from '../../application/usecase/upsert.account.r
 import { InvalidAccountDataError } from '../../application/exceptions/InvalidAccountDataError';
 import { UpdateAccountUsecase } from '../../application/usecase/update.account.usecase';
 import { AccountDoesNotExist } from '../../application/exceptions/AccountDoesNotExist';
-import { validate as isUUID } from 'uuid';
 
 @Controller('account')
 export class AccountController {
