@@ -33,6 +33,25 @@ export class Account {
     );
   }
 
+  static update(
+    id: string,
+    name: string,
+    accountNumber: number,
+    accountBalance: number,
+    accountType: AccountType,
+    createdAt: Date,
+  ): Account {
+    return new Account(
+      name,
+      accountNumber,
+      accountBalance,
+      accountType,
+      createdAt,
+      id,
+      new Date(),
+    );
+  }
+
   accountTypeAllowed(): boolean {
     return [AccountType.CONTA_CORRENTE, AccountType.CONTA_POUPANCA].includes(
       this.accountType,

@@ -45,7 +45,7 @@ export class AccountRepository implements AccountRepositoryInterface {
     try {
       const account = await this.accountRepository
         .createQueryBuilder('account')
-        .where('account.accountNumber = :accountNumber', { accountNumber })
+        .where('account.account_number = :accountNumber', { accountNumber })
         .getOne();
 
       if (account) {
@@ -88,6 +88,47 @@ export class AccountRepository implements AccountRepositoryInterface {
       return left(new Error('Error when creating account'));
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  async update(account: Account): Promise<Either<Error, Account>> {
+    this.logger.log('Updating account');
+    this.logger.log(`Account received: ${JSON.stringify(account)}`);
+
+    try {
+      const accountUpdated = await this.accountRepository.save(
+        AccountModel.mapToModel(account, account.id),
+      );
+
+      if (!accountUpdated) {
+        this.logger.error('Error when updating account');
+        return left(new Error('Error when updating account'));
+      }
+      this.logger.log(`Account updated: ${JSON.stringify(accountUpdated)}`);
+      return right(AccountModel.mapToEntity(accountUpdated));
+    } catch (error) {
+      this.logger.error(`Error when updating account: ${error}`);
+      return left(new Error('Error when updating account'));
+    }
+  }
+
+  async delete(id: string): Promise<Either<Error, null>> {
+    this.logger.log(`Deleting account with id: ${id}`);
+
+    try {
+      const account = await this.accountRepository.findOne({ where: { id } });
+
+      if (!account) {
+        this.logger.warn(`Account with ID ${id} not found`);
+        return left(new Error('Account not found'));
+      }
+
+      await this.accountRepository.delete(id);
+      this.logger.log(`Account with ID ${id} deleted`);
+      return right(null);
+    } catch (error) {
+      this.logger.error(`Error when deleting account: ${error}`);
+      return left(new Error('Error when deleting account'));
     }
   }
 }

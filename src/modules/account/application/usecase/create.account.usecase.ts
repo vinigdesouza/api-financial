@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CustomLogger } from 'src/modules/shared/custom.logger';
 import { AccountRepositoryInterface } from '../../domain/repository/account.repository.interface';
 import { Account } from '../../domain/entity/account.entity';
-import { CreateAccountRequest } from './create.account.request';
+import { UpsertAccountRequest } from './upsert.account.request';
 import { Either, left, right } from 'src/modules/shared/either';
 import { InvalidAccountDataError } from '../exceptions/InvalidAccountDataError';
 
@@ -15,9 +15,9 @@ export class CreateAccountUsecase {
   ) {}
 
   async handle(
-    request: CreateAccountRequest,
+    request: UpsertAccountRequest,
   ): Promise<Either<Error | InvalidAccountDataError, Account>> {
-    this.logger.log('Creating account usecase');
+    this.logger.log('Updating account usecase');
     this.logger.log(`Request received: ${JSON.stringify(request)}`);
 
     const account = Account.create(
@@ -27,22 +27,14 @@ export class CreateAccountUsecase {
       request.accountType,
     );
 
-    const allowedAccountType = account.accountTypeAllowed();
-    if (!allowedAccountType) {
-      this.logger.error('Account type not allowed');
-      return left(new InvalidAccountDataError('Invalid account type'));
-    }
-
-    const accountBalancePositive = account.accountBalanceIsPositive();
-    if (!accountBalancePositive) {
-      this.logger.error('Account balance is negative');
-      return left(new InvalidAccountDataError('Account balance negative'));
-    }
-
     this.logger.log('Checking if account number already exists');
     const accountExists = await this.accountRepository.findByAccountNumber(
       account.accountNumber,
     );
+    if (accountExists.isLeft()) {
+      this.logger.error('Error when searching for account by number');
+      return left(new Error('It was not possible to retrieve the account'));
+    }
     if (accountExists.value !== null) {
       this.logger.error('Account number already exists');
       return left(new InvalidAccountDataError('Account already exists'));

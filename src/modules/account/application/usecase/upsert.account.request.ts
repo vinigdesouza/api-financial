@@ -1,6 +1,6 @@
 import { AccountType } from '../../domain/entity/account.entity';
 
-export type CreateAccountRequest = {
+export type UpsertAccountRequest = {
   name: string;
   accountNumber: number;
   accountBalance: number;
