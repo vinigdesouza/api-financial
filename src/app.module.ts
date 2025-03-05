@@ -10,10 +10,20 @@ import AccountModel from './modules/account/infrastructure/models/account.model'
 import { CreateAccountTable1741108788820 } from './migration/1741128600352-CreateAccountTable';
 import { JwtMiddleware } from './modules/middleware/jwt.middleware';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
     AccountModule,
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 10,
+        },
+      ],
+    }),
     ConfigModule.forRoot({ isGlobal: true }),
     LoggerModule.forRoot(),
     TypeOrmModule.forRoot({
@@ -30,7 +40,12 @@ import { ConfigModule } from '@nestjs/config';
     }),
   ],
   controllers: [AppController, AccountController],
-  providers: [AppService, CustomLogger, JwtMiddleware],
+  providers: [
+    AppService,
+    CustomLogger,
+    JwtMiddleware,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
   exports: [CustomLogger],
 })
 export class AppModule implements NestModule {
