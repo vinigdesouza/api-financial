@@ -4,11 +4,10 @@ import { AppService } from './app.service';
 import { LoggerModule } from 'nestjs-pino';
 import { CustomLogger } from './modules/shared/custom.logger';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Account } from './modules/account/domain/entity/account.entity';
-import { CreateAccountTable1741108788820 } from 'src/migration/1741108788821-CreateAccountTable';
 import { AccountController } from './modules/account/infrastructure/controller/account.controller';
 import { AccountModule } from './modules/account/account.module';
 import AccountModel from './modules/account/infrastructure/models/account.model';
+import { CreateAccountTable1741108788820 } from './migration/1741128600352-CreateAccountTable';
 
 @Module({
   imports: [
@@ -23,6 +22,7 @@ import AccountModel from './modules/account/infrastructure/models/account.model'
       database: 'financial_db',
       entities: [AccountModel],
       migrations: [CreateAccountTable1741108788820],
+      synchronize: true,
       logging: true,
     }),
   ],

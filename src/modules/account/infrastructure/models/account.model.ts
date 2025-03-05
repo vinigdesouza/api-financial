@@ -1,9 +1,9 @@
-import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Account, AccountType } from '../../domain/entity/account.entity';
 
 @Entity({ name: 'account' })
 export default class AccountModel extends BaseEntity {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
@@ -21,17 +21,17 @@ export default class AccountModel extends BaseEntity {
   @Column({ type: 'timestamp' })
   created_at: Date;
 
-  @Column({ type: 'timestamp' })
-  updated_at: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  updated_at?: Date;
 
   static mapToEntity(model: AccountModel): Account {
     const account = new Account(
-      model.id,
       model.name,
       model.account_number,
       model.account_balance,
       model.account_type as AccountType,
       model.created_at,
+      model.id,
       model.updated_at,
     );
     return account;
@@ -44,7 +44,7 @@ export default class AccountModel extends BaseEntity {
     model.account_balance = entity.accountBalance;
     model.account_type = entity.accountType;
     model.created_at = entity.createdAt;
-    model.updated_at = entity.updatedAt ?? new Date();
+    model.updated_at = entity.updatedAt ?? undefined;
     if (id) {
       model.id = id;
     }

@@ -1,7 +1,10 @@
-import { Account, AccountType } from '../../domain/entity/account.entity';
+import {
+  Account,
+  AccountType,
+} from 'src/modules/account/domain/entity/account.entity';
 
 export class AccountResponse {
-  id: string;
+  id?: string;
   name: string;
   accountNumber: number;
   accountBalance: number;
@@ -10,12 +13,12 @@ export class AccountResponse {
 
   static criar(account: Account): AccountResponse {
     const response = new Account(
-      account.id,
       account.name,
       account.accountNumber,
       account.accountBalance,
       account.accountType,
       account.createdAt,
+      account.id,
     );
 
     return response;
