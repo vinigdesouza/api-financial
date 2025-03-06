@@ -4,6 +4,7 @@ import { plainToClass } from 'class-transformer';
 import { faker } from '@faker-js/faker';
 import { Account, AccountType } from '../../domain/entity/account.entity';
 import { CreateAccountDTO } from '../../infrastructure/dto/request/create.account.dto';
+import AccountModel from '../../infrastructure/models/account.model';
 
 export const fakeLogger: Partial<CustomLogger> = {
   verbose: jest.fn(),
@@ -53,6 +54,24 @@ export const buildAccount = (partial: Partial<Account>): Account => {
       createdAt: new Date(),
       id: faker.string.uuid(),
       updatedAt: new Date(),
+    },
+    ...partial,
+  });
+  return data;
+};
+
+export const buildAccountModel = (
+  partial: Partial<AccountModel>,
+): AccountModel => {
+  const data: AccountModel = plainToClass(AccountModel, {
+    ...{
+      name: faker.lorem.words(),
+      account_number: faker.number.int({ min: 1, max: 3000 }),
+      account_balance: faker.number.int({ min: 1, max: 30000 }),
+      account_type: AccountType.CONTA_CORRENTE,
+      created_at: new Date(),
+      id: faker.string.uuid(),
+      updated_at: new Date(),
     },
     ...partial,
   });

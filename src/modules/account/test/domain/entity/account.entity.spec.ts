@@ -3,13 +3,6 @@ import { faker } from '@faker-js/faker/.';
 import { Account, AccountType } from '../../../domain/entity/account.entity';
 
 describe('Entity Account', () => {
-  beforeEach(() => {
-    jest.useFakeTimers().setSystemTime(new Date('2025-02-01'));
-  });
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('should create a valid account', () => {
     const account = buildAccount({});
 

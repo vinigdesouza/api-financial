@@ -11,7 +11,7 @@ import {
   Transaction,
   TransactionType,
 } from '../../domain/entity/transaction.entity';
-import AccountModel from 'src/modules/account/infrastructure/models/account.model';
+import AccountModel from '../../../account/infrastructure/models/account.model';
 
 @Entity({ name: 'transaction' })
 export default class TransactionModel extends BaseEntity {

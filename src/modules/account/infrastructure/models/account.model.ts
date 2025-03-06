@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Account, AccountType } from '../../domain/entity/account.entity';
-import TransactionModel from 'src/modules/transaction/infrastructure/models/transaction.model';
+import TransactionModel from '../../../transaction/infrastructure/models/transaction.model';
 
 @Entity({ name: 'account' })
 export default class AccountModel extends BaseEntity {
