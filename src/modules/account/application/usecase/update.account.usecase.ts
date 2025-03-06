@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CustomLogger } from 'src/modules/shared/custom.logger';
+import { CustomLogger } from '../../../shared/custom.logger';
 import { AccountRepositoryInterface } from '../../domain/repository/account.repository.interface';
 import { Account } from '../../domain/entity/account.entity';
 import { UpsertAccountRequest } from './upsert.account.request';
-import { Either, left, right } from 'src/modules/shared/either';
+import { Either, left, right } from '../../../shared/either';
 import { InvalidAccountDataError } from '../exceptions/InvalidAccountDataError';
 import { AccountDoesNotExist } from '../exceptions/AccountDoesNotExist';
 
@@ -52,7 +52,10 @@ export class UpdateAccountUsecase {
       return left(new Error('It was not possible to retrieve the account'));
     }
 
-    if (accountNumberExists.value !== null) {
+    if (
+      accountNumberExists.value !== null &&
+      accountNumberExists.value.id !== idAccount
+    ) {
       this.logger.error('Account number already exists');
       return left(new InvalidAccountDataError('Account already exists'));
     }
