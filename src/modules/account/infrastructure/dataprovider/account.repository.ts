@@ -1,10 +1,10 @@
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Either, left, right } from 'src/modules/shared/either';
+import { Either, left, right } from '../../../shared/either';
 import { Account } from '../../domain/entity/account.entity';
 import { AccountRepositoryInterface } from '../../domain/repository/account.repository.interface';
 import { Injectable } from '@nestjs/common';
-import { CustomLogger } from 'src/modules/shared/custom.logger';
+import { CustomLogger } from '../../../shared/custom.logger';
 import AccountModel from '../models/account.model';
 
 @Injectable()
@@ -33,8 +33,9 @@ export class AccountRepository implements AccountRepositoryInterface {
       return right(null);
     } catch (error) {
       this.logger.error(`Error when searching for account: ${error}`);
-      return left(new Error('Error when searching for account'));
     }
+
+    return left(new Error('Error when searching for account'));
   }
 
   async findByAccountNumber(
@@ -65,9 +66,6 @@ export class AccountRepository implements AccountRepositoryInterface {
     this.logger.log('Creating account');
     this.logger.log(`Account received: ${JSON.stringify(account)}`);
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.startTransaction();
-
     try {
       const accountCreated = await this.accountRepository.save(
         AccountModel.mapToModel(account),
@@ -75,19 +73,14 @@ export class AccountRepository implements AccountRepositoryInterface {
 
       if (!accountCreated) {
         this.logger.error('Error when creating account');
-        await queryRunner.rollbackTransaction();
         return left(new Error('Error when creating account'));
       }
 
-      await queryRunner.commitTransaction();
       this.logger.log(`Account created: ${JSON.stringify(accountCreated)}`);
       return right(AccountModel.mapToEntity(accountCreated));
     } catch (error) {
-      await queryRunner.rollbackTransaction();
       this.logger.error(`Error when creating account: ${error}`);
       return left(new Error('Error when creating account'));
-    } finally {
-      await queryRunner.release();
     }
   }
 
