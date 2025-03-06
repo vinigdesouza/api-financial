@@ -1,8 +1,8 @@
 import { AccountType } from '../../domain/entity/account.entity';
 
-export type UpsertAccountRequest = {
+export class UpsertAccountRequest {
   name: string;
   accountNumber: number;
   accountBalance: number;
   accountType: AccountType;
-};
+}

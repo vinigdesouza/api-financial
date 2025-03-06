@@ -18,11 +18,5 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "resolveJsonModule": true,
-  },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  }
 }

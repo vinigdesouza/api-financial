@@ -112,7 +112,7 @@ export class AccountRepository implements AccountRepositoryInterface {
     }
   }
 
-  async delete(id: string): Promise<Either<Error, null>> {
+  async deleteAccount(id: string): Promise<Either<Error, null>> {
     this.logger.log(`Deleting account with id: ${id}`);
 
     try {

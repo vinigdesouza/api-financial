@@ -141,7 +141,7 @@ export class AccountController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<Either<InternalServerErrorException, undefined>> {
     this.logger.log(`Deleting account by id: ${id}`);
-    const accountDeleted = await this.accountRepository.delete(id);
+    const accountDeleted = await this.accountRepository.deleteAccount(id);
 
     if (accountDeleted.isLeft()) {
       this.logger.error(

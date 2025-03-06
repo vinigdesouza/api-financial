@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CustomLogger } from 'src/modules/shared/custom.logger';
 import { AccountRepositoryInterface } from '../../domain/repository/account.repository.interface';
 import { Account } from '../../domain/entity/account.entity';
 import { UpsertAccountRequest } from './upsert.account.request';
-import { Either, left, right } from 'src/modules/shared/either';
 import { InvalidAccountDataError } from '../exceptions/InvalidAccountDataError';
+import { CustomLogger } from '../../../shared/custom.logger';
+import { Either, left, right } from '../../../shared/either';
 
 @Injectable()
 export class CreateAccountUsecase {
