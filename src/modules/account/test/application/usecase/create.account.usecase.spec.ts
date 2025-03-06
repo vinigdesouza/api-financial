@@ -3,17 +3,17 @@ import {
   create,
   fakeAccountRepository,
   findByAccountNumber,
-} from '../util/mocks/account.repository.mock';
+} from '../../util/mocks/account.repository.mock';
 import {
   buildAccount,
   buildUpsertAccountRequest,
   fakeLogger,
-} from '../util/common.faker';
-import { CreateAccountUsecase } from '../../application/usecase/create.account.usecase';
-import { CustomLogger } from '../../../shared/custom.logger';
-import { left, right } from '../../../shared/either';
+} from '../../util/common.faker';
+import { CreateAccountUsecase } from '../../../application/usecase/create.account.usecase';
+import { CustomLogger } from '../../../../shared/custom.logger';
+import { left, right } from '../../../../shared/either';
 import { faker } from '@faker-js/faker/.';
-import { InvalidAccountDataError } from '../../application/exceptions/InvalidAccountDataError';
+import { InvalidAccountDataError } from '../../../application/exceptions/InvalidAccountDataError';
 
 describe('CreateAccountUsecase', () => {
   let useCase: CreateAccountUsecase;

@@ -5,18 +5,18 @@ import {
   findByAccountNumber,
   findById,
   update,
-} from '../util/mocks/account.repository.mock';
+} from '../../util/mocks/account.repository.mock';
 import {
   buildAccount,
   buildUpsertAccountRequest,
   fakeLogger,
-} from '../util/common.faker';
-import { CustomLogger } from '../../../shared/custom.logger';
-import { left, right } from '../../../shared/either';
+} from '../../util/common.faker';
+import { CustomLogger } from '../../../../shared/custom.logger';
+import { left, right } from '../../../../shared/either';
 import { faker } from '@faker-js/faker/.';
-import { InvalidAccountDataError } from '../../application/exceptions/InvalidAccountDataError';
-import { UpdateAccountUsecase } from '../../application/usecase/update.account.usecase';
-import { AccountDoesNotExist } from '../../application/exceptions/AccountDoesNotExist';
+import { InvalidAccountDataError } from '../../../application/exceptions/InvalidAccountDataError';
+import { UpdateAccountUsecase } from '../../../application/usecase/update.account.usecase';
+import { AccountDoesNotExist } from '../../../application/exceptions/AccountDoesNotExist';
 
 describe('UpdateAccountUsecase', () => {
   let useCase: UpdateAccountUsecase;

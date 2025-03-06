@@ -12,9 +12,9 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { CustomLogger } from 'src/modules/shared/custom.logger';
+import { CustomLogger } from '../../../shared/custom.logger';
 import { AccountRepositoryInterface } from '../../domain/repository/account.repository.interface';
-import { Either, left, right } from 'src/modules/shared/either';
+import { Either, left, right } from '../../../shared/either';
 import { CreateAccountDTO } from '../dto/request/create.account.dto';
 import { AccountResponse } from '../dto/response/account.response';
 import { CreateAccountUsecase } from '../../application/usecase/create.account.usecase';
@@ -55,7 +55,7 @@ export class AccountController {
       return left(new NotFoundException());
     }
 
-    return right(AccountResponse.criar(account.value));
+    return right(AccountResponse.create(account.value));
   }
 
   @Post()
@@ -133,7 +133,7 @@ export class AccountController {
       return left(new InternalServerErrorException(response.value.message));
     }
 
-    return right(AccountResponse.criar(response.value));
+    return right(AccountResponse.create(response.value));
   }
 
   @Delete(':id')

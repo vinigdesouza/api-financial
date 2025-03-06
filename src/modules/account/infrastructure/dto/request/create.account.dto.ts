@@ -6,7 +6,7 @@ import {
   Min,
   IsNotEmpty,
 } from 'class-validator';
-import { AccountType } from 'src/modules/account/domain/entity/account.entity';
+import { AccountType } from '../../../domain/entity/account.entity';
 
 export class CreateAccountDTO {
   @IsString()
