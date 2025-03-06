@@ -47,7 +47,6 @@ export class UpdateAccountUsecase {
       await this.accountRepository.findByAccountNumber(request.accountNumber);
 
     if (accountNumberExists.isLeft()) {
-      console.log('entrou aqui');
       this.logger.error('Error when searching for account by number');
       return left(new Error('It was not possible to retrieve the account'));
     }

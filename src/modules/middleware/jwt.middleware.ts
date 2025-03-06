@@ -31,7 +31,6 @@ export class JwtMiddleware implements NestMiddleware {
   ) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    console.log('chegou no middelware');
     this.logger.log('JWT Middleware');
     const token = req.headers['authorization'];
 
