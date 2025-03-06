@@ -39,7 +39,7 @@ export class TransactionListener {
         accountId,
         account.name,
         account.accountNumber,
-        newAccountBalance,
+        Number(newAccountBalance),
         account.accountType,
         account.createdAt,
       ),
@@ -51,8 +51,11 @@ export class TransactionListener {
       if (destinationAccount.isLeft() || !destinationAccount.value) return;
 
       const newAccountBalanceDestination =
-        event.amount + destinationAccount.value.accountBalance;
+        Number(event.amount) + Number(destinationAccount.value.accountBalance);
 
+      this.logger.log(
+        `Updating destination account ${destinationAccountId} with new balance ${newAccountBalanceDestination}`,
+      );
       await this.accountRepository.update(
         Account.update(
           destinationAccountId,

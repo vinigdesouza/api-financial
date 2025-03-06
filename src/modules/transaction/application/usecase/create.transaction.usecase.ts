@@ -3,6 +3,7 @@ import { TransactionRepositoryInterface } from '../../domain/repository/transact
 import { CustomLogger } from 'src/modules/shared/custom.logger';
 import { CreateTransactionDTO } from '../../infrastructure/dto/create.transaction.dto';
 import {
+  CurrencyTypes,
   StatusTransaction,
   Transaction,
   TransactionType,
@@ -13,6 +14,7 @@ import { AccountDoesNotExist } from 'src/modules/account/application/exceptions/
 import { BalanceInsufficient } from '../exceptions/BalanceInsufficient';
 import { TransactionProcessedEvent } from '../events/transaction-created.event';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CurrencyConversionService } from '../../domain/services/CurrencyConversionService';
 
 @Injectable()
 export class CreateTransactionUsecase {
@@ -21,6 +23,7 @@ export class CreateTransactionUsecase {
     private readonly transactionRepository: TransactionRepositoryInterface,
     @Inject('AccountRepositoryInterface')
     private readonly accountRepository: AccountRepositoryInterface,
+    private readonly CurrencyConversionService: CurrencyConversionService,
     private readonly logger: CustomLogger,
     private readonly eventEmitter: EventEmitter2,
   ) {}
@@ -35,11 +38,24 @@ export class CreateTransactionUsecase {
 
     const idAccount = request.account_id;
     const idAccountDestination = request.destination_account_id;
-    const amount = request.amount;
+    let amount = request.amount;
     const transactionType = request.transaction_type;
     const currency = request.currency;
 
-    // verifiar a moeda
+    if (currency !== CurrencyTypes.REAL) {
+      const newAmount = await this.CurrencyConversionService.convertCurrency(
+        amount,
+        currency,
+        CurrencyTypes.REAL,
+      );
+
+      if (newAmount.isLeft()) {
+        this.logger.error('Error converting currency');
+        return left(new Error('Error converting currency'));
+      }
+
+      amount = newAmount.value;
+    }
 
     this.logger.log(`Finding origin account by id: ${idAccount}`);
     const accountOriginExists =

@@ -10,15 +10,23 @@ import { AccountModule } from '../account/account.module';
 import AccountModel from '../account/infrastructure/models/account.model';
 import { TransactionListener } from './application/events/transaction.listener';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { HttpModule } from '@nestjs/axios';
+import { CurrencyGateway } from './infrastructure/gateway/currency.gateway';
+import { CurrencyConversionService } from './domain/services/CurrencyConversionService';
 
 @Module({
   imports: [
     AccountModule,
+    HttpModule.register({
+      timeout: 5000,
+      maxRedirects: 5,
+    }),
     TypeOrmModule.forFeature([TransactionModel, AccountModel]),
     EventEmitterModule.forRoot(),
   ],
   controllers: [TransactionController],
   providers: [
+    CurrencyConversionService,
     CustomLogger,
     CreateTransactionUsecase,
     TransactionRepository,
@@ -29,6 +37,10 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     {
       provide: 'AccountRepositoryInterface',
       useClass: AccountRepository,
+    },
+    {
+      provide: 'CurrencyGatewayInterface',
+      useClass: CurrencyGateway,
     },
     TransactionListener,
   ],

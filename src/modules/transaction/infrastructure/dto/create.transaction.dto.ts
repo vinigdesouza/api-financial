@@ -29,7 +29,7 @@ export class CreateTransactionDTO {
   transaction_type: TransactionType;
 
   @IsEnum(CurrencyTypes, { message: 'Invalid currency type' })
-  currency: string;
+  currency: CurrencyTypes;
 
   @ValidateIf((o) => o.transaction_type === TransactionType.TRANSFER)
   @IsUUID('4', { message: 'Destination Account ID must be a valid UUID' })

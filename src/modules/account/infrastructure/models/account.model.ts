@@ -19,7 +19,7 @@ export default class AccountModel extends BaseEntity {
   @Column()
   account_number: number;
 
-  @Column()
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   account_balance: number;
 
   @Column()

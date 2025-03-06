@@ -9,7 +9,7 @@ export class CreateAccountTable1741108788820 implements MigrationInterface {
         id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
         name VARCHAR(255),
         account_number INT,
-        account_balance DECIMAL(10, 2),
+        account_balance DECIMAL(10, 2) NOT NULL DEFAULT 0,
         account_type VARCHAR(255) CHECK (account_type IN ('CONTA_CORRENTE', 'CONTA_POUPANCA')),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT NULL

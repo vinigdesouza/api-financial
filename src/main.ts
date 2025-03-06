@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { CustomLogger } from './modules/shared/custom.logger';
 import { ValidationPipe } from '@nestjs/common';
 import { JwtMiddleware } from './modules/middleware/jwt.middleware';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,6 +14,15 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  const config = new DocumentBuilder()
+    .setTitle('Api financial')
+    .setDescription('The financial API')
+    .setVersion('1.0')
+    .addTag('financial')
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory);
 
   await app.listen(process.env.PORT ?? 3000);
   app.use(JwtMiddleware);
