@@ -105,6 +105,7 @@ describe('AccountController (e2e)', () => {
         accountBalance: createAccountModel.account_balance,
         accountType: createAccountModel.account_type,
         createdAt: expect.any(String),
+        updatedAt: expect.any(String),
       });
     });
   });
