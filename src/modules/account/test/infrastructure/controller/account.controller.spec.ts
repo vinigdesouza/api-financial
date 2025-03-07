@@ -21,7 +21,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { AccountResponse } from '../../../infrastructure/dto/response/account.response';
 import { InvalidAccountDataError } from '../../../application/exceptions/InvalidAccountDataError';
 
 describe('AccountController', () => {
@@ -64,10 +63,10 @@ describe('AccountController', () => {
       const errorMessage = faker.lorem.words();
       findById.mockResolvedValueOnce(left(new Error(errorMessage)));
 
-      const result = await controller.findOne(id);
-      expect(result).toEqual(
-        left(new InternalServerErrorException(errorMessage)),
+      await expect(controller.findOne(id)).rejects.toThrow(
+        new InternalServerErrorException(errorMessage),
       );
+
       expect(findById).toHaveBeenCalledTimes(1);
       expect(findById.mock.calls[0][0]).toStrictEqual(id);
     });
@@ -76,8 +75,9 @@ describe('AccountController', () => {
       const id = faker.string.uuid();
       findById.mockResolvedValueOnce(right(null));
 
-      const result = await controller.findOne(id);
-      expect(result).toEqual(left(new NotFoundException()));
+      await expect(controller.findOne(id)).rejects.toThrow(
+        new NotFoundException(),
+      );
       expect(findById).toHaveBeenCalledTimes(1);
       expect(findById.mock.calls[0][0]).toStrictEqual(id);
     });
@@ -88,7 +88,7 @@ describe('AccountController', () => {
       findById.mockResolvedValueOnce(right(account));
 
       const result = await controller.findOne(id);
-      expect(result).toEqual(right(AccountResponse.create(account)));
+      expect(result).toEqual(account);
       expect(findById).toHaveBeenCalledTimes(1);
       expect(findById.mock.calls[0][0]).toStrictEqual(id);
     });
@@ -109,8 +109,9 @@ describe('AccountController', () => {
         left(new InvalidAccountDataError(errorMessage)),
       );
 
-      const result = await controller.create(createAccountDto);
-      expect(result).toEqual(left(new BadRequestException(errorMessage)));
+      await expect(controller.create(createAccountDto)).rejects.toThrow(
+        new BadRequestException(errorMessage),
+      );
       expect(handleCreate).toHaveBeenCalledTimes(1);
       expect(handleCreate.mock.calls[0][0]).toMatchObject(usecaseRequest);
     });
@@ -127,9 +128,8 @@ describe('AccountController', () => {
 
       handleCreate.mockResolvedValueOnce(left(new Error(errorMessage)));
 
-      const result = await controller.create(createAccountDto);
-      expect(result).toEqual(
-        left(new InternalServerErrorException(errorMessage)),
+      await expect(controller.create(createAccountDto)).rejects.toThrow(
+        new InternalServerErrorException(errorMessage),
       );
       expect(handleCreate).toHaveBeenCalledTimes(1);
       expect(handleCreate.mock.calls[0][0]).toMatchObject(usecaseRequest);
@@ -159,7 +159,7 @@ describe('AccountController', () => {
       );
 
       const result = await controller.create(createAccountDto);
-      expect(result).toEqual(right(undefined));
+      expect(result).toEqual(undefined);
       expect(handleCreate).toHaveBeenCalledTimes(1);
       expect(handleCreate.mock.calls[0][0]).toMatchObject(usecaseRequest);
     });
@@ -181,8 +181,9 @@ describe('AccountController', () => {
         left(new InvalidAccountDataError(errorMessage)),
       );
 
-      const result = await controller.update(idAccount, createAccountDto);
-      expect(result).toEqual(left(new BadRequestException(errorMessage)));
+      await expect(
+        controller.update(idAccount, createAccountDto),
+      ).rejects.toThrow(new BadRequestException(errorMessage));
       expect(handleUpdate).toHaveBeenCalledTimes(1);
       expect(handleUpdate.mock.calls[0][0]).toStrictEqual(idAccount);
       expect(handleUpdate.mock.calls[0][1]).toMatchObject(usecaseRequest);
@@ -201,10 +202,9 @@ describe('AccountController', () => {
 
       handleUpdate.mockResolvedValueOnce(left(new Error(errorMessage)));
 
-      const result = await controller.update(idAccount, createAccountDto);
-      expect(result).toEqual(
-        left(new InternalServerErrorException(errorMessage)),
-      );
+      await expect(
+        controller.update(idAccount, createAccountDto),
+      ).rejects.toThrow(new InternalServerErrorException(errorMessage));
       expect(handleUpdate).toHaveBeenCalledTimes(1);
       expect(handleUpdate.mock.calls[0][0]).toStrictEqual(idAccount);
       expect(handleUpdate.mock.calls[0][1]).toMatchObject(usecaseRequest);
@@ -233,7 +233,7 @@ describe('AccountController', () => {
       handleUpdate.mockResolvedValueOnce(right(account));
 
       const result = await controller.update(idAccount, createAccountDto);
-      expect(result).toEqual(right(AccountResponse.create(account)));
+      expect(result).toEqual(account);
       expect(handleUpdate).toHaveBeenCalledTimes(1);
       expect(handleUpdate.mock.calls[0][0]).toStrictEqual(idAccount);
       expect(handleUpdate.mock.calls[0][1]).toMatchObject(usecaseRequest);
@@ -246,9 +246,8 @@ describe('AccountController', () => {
       const errorMessage = faker.lorem.words();
       deleteAccount.mockResolvedValueOnce(left(new Error(errorMessage)));
 
-      const result = await controller.delete(id);
-      expect(result).toEqual(
-        left(new InternalServerErrorException(errorMessage)),
+      await expect(controller.delete(id)).rejects.toThrow(
+        new InternalServerErrorException(errorMessage),
       );
       expect(deleteAccount).toHaveBeenCalledTimes(1);
       expect(deleteAccount.mock.calls[0][0]).toStrictEqual(id);
@@ -259,7 +258,7 @@ describe('AccountController', () => {
       deleteAccount.mockResolvedValueOnce(right(null));
 
       const result = await controller.delete(id);
-      expect(result).toEqual(right(undefined));
+      expect(result).toEqual(undefined);
       expect(deleteAccount).toHaveBeenCalledTimes(1);
       expect(deleteAccount.mock.calls[0][0]).toStrictEqual(id);
     });

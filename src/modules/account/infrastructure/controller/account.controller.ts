@@ -15,12 +15,12 @@ import {
 import { CustomLogger } from '../../../shared/custom.logger';
 import { AccountRepositoryInterface } from '../../domain/repository/account.repository.interface';
 import { CreateAccountDTO } from '../dto/request/create.account.dto';
-import { AccountResponse } from '../dto/response/account.response';
 import { CreateAccountUsecase } from '../../application/usecase/create.account.usecase';
 import { UpsertAccountRequest } from '../../application/usecase/upsert.account.request';
 import { InvalidAccountDataError } from '../../application/exceptions/InvalidAccountDataError';
 import { UpdateAccountUsecase } from '../../application/usecase/update.account.usecase';
 import { AccountDoesNotExist } from '../../application/exceptions/AccountDoesNotExist';
+import { Account } from '../../domain/entity/account.entity';
 
 @Controller('account')
 export class AccountController {
@@ -36,7 +36,7 @@ export class AccountController {
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<
-    Error | InternalServerErrorException | NotFoundException | AccountResponse
+    Error | InternalServerErrorException | NotFoundException | Account
   > {
     this.logger.log(`Finding account by id: ${id}`);
     const account = await this.accountRepository.findById(id);
@@ -48,14 +48,13 @@ export class AccountController {
       );
       throw new InternalServerErrorException(account.value.message);
     }
-    console.log('account.value', account.value);
+
     if (!account.value) {
-      console.log('entrou qui', account.value);
       this.logger.warn(`Account with id ${id} not found`);
       throw new NotFoundException();
     }
 
-    return AccountResponse.create(account.value);
+    return account.value;
   }
 
   @Post()
@@ -73,7 +72,7 @@ export class AccountController {
     };
 
     const response = await this.createAccountUsecase.handle(usecaseRequest);
-    console.log('response', response);
+
     if (response.isLeft()) {
       if (response.value instanceof InvalidAccountDataError) {
         this.logger.error(
@@ -97,9 +96,7 @@ export class AccountController {
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUsetDto: CreateAccountDTO,
-  ): Promise<
-    Error | BadRequestException | NotFoundException | AccountResponse
-  > {
+  ): Promise<Error | BadRequestException | NotFoundException | Account> {
     this.logger.log('Updating account controller');
     this.logger.log(`Updating account for user: ${updateUsetDto.name}`);
 
