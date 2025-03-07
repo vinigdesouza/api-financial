@@ -34,17 +34,7 @@ describe('AccountController (e2e)', () => {
     // jest.useFakeTimers().setSystemTime(new Date('2025-02-01'));
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        AppModule,
-        TypeOrmModule.forRoot({
-          type: 'sqlite',
-          database: ':memory:',
-          entities: [Account],
-          migrations: [CreateAccountTable1741108788820],
-          synchronize: true,
-          logging: true,
-        }),
-      ],
+      imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();

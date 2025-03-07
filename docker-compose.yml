@@ -21,7 +21,7 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgres://postgres:vini.postgress.dev@db:5432/financial_db
+      DATABASE_URL: postgres://postgres:vini.postgress.dev@db:5432/financial_db?sslmode=disable
     ports:
       - "3000:3000"
     volumes:
