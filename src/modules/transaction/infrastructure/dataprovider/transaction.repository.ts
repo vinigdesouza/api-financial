@@ -1,8 +1,8 @@
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Either, left, right } from 'src/modules/shared/either';
+import { Either, left, right } from '../../../shared/either';
 import { Injectable } from '@nestjs/common';
-import { CustomLogger } from 'src/modules/shared/custom.logger';
+import { CustomLogger } from '../../../shared/custom.logger';
 import { TransactionRepositoryInterface } from '../../domain/repository/transaction.repository.interface';
 import TransactionModel from '../models/transaction.model';
 import { Transaction } from '../../domain/entity/transaction.entity';

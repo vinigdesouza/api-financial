@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { CustomLogger } from 'src/modules/shared/custom.logger';
+import { CustomLogger } from '../shared/custom.logger';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionController } from './infrastructure/controller/transaction.controller';
 import { TransactionRepository } from './infrastructure/dataprovider/transaction.repository';

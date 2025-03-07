@@ -1,4 +1,4 @@
-import { Either } from 'src/modules/shared/either';
+import { Either } from '../../../shared/either';
 
 export interface CurrencyGatewayInterface {
   getCurrencyPrice(

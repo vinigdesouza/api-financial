@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CurrencyGatewayInterface } from '../../domain/gateway/currency.gateway.interface';
-import { CustomLogger } from 'src/modules/shared/custom.logger';
-import { Either, left, right } from 'src/modules/shared/either';
+import { CustomLogger } from '../../../shared/custom.logger';
+import { Either, left, right } from '../../../shared/either';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
 

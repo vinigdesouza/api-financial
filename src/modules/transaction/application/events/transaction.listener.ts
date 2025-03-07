@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { TransactionProcessedEvent } from '../events/transaction-created.event';
-import { AccountRepositoryInterface } from 'src/modules/account/domain/repository/account.repository.interface';
-import { Account } from 'src/modules/account/domain/entity/account.entity';
-import { CustomLogger } from 'src/modules/shared/custom.logger';
+import { AccountRepositoryInterface } from '../../../account/domain/repository/account.repository.interface';
+import { Account } from '../../../account/domain/entity/account.entity';
+import { CustomLogger } from '../../../shared/custom.logger';
 
 @Injectable()
 export class TransactionListener {

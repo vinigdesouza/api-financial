@@ -1,4 +1,4 @@
-import { CustomLogger } from 'src/modules/shared/custom.logger';
+import { CustomLogger } from '../../../shared/custom.logger';
 import { UpsertAccountRequest } from '../../application/usecase/upsert.account.request';
 import { plainToClass } from 'class-transformer';
 import { faker } from '@faker-js/faker';

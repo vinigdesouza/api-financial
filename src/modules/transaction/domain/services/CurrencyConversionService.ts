@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CurrencyGatewayInterface } from '../gateway/currency.gateway.interface';
-import { CustomLogger } from 'src/modules/shared/custom.logger';
-import { Either, left, right } from 'src/modules/shared/either';
+import { CustomLogger } from '../../../shared/custom.logger';
+import { Either, left, right } from '../../../shared/either';
 
 @Injectable()
 export class CurrencyConversionService {

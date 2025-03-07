@@ -1,4 +1,4 @@
-import { AccountRepositoryInterface } from 'src/modules/account/domain/repository/account.repository.interface';
+import { AccountRepositoryInterface } from '../../../domain/repository/account.repository.interface';
 
 export const findById: jest.Mock = jest.fn();
 export const create: jest.Mock = jest.fn();

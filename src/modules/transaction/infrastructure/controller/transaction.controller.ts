@@ -11,13 +11,13 @@ import {
   ParseUUIDPipe,
   Post,
 } from '@nestjs/common';
-import { CustomLogger } from 'src/modules/shared/custom.logger';
-import { Either, left, right } from 'src/modules/shared/either';
+import { CustomLogger } from '../../../shared/custom.logger';
+import { Either, left, right } from '../../../shared/either';
 import { TransactionRepositoryInterface } from '../../domain/repository/transaction.repository.interface';
 import { Transaction } from '../../domain/entity/transaction.entity';
 import { CreateTransactionDTO } from '../dto/create.transaction.dto';
 import { CreateTransactionUsecase } from '../../application/usecase/create.transaction.usecase';
-import { AccountDoesNotExist } from 'src/modules/account/application/exceptions/AccountDoesNotExist';
+import { AccountDoesNotExist } from '../../../account/application/exceptions/AccountDoesNotExist';
 import { BalanceInsufficient } from '../../application/exceptions/BalanceInsufficient';
 
 @Controller('transaction')

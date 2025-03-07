@@ -44,7 +44,7 @@ export default class AccountModel extends BaseEntity {
     const account = new Account(
       model.name,
       model.account_number,
-      model.account_balance,
+      parseFloat(model.account_balance.toString()),
       model.account_type as AccountType,
       model.created_at,
       model.id,

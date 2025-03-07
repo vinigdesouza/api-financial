@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TransactionRepositoryInterface } from '../../domain/repository/transaction.repository.interface';
-import { CustomLogger } from 'src/modules/shared/custom.logger';
+import { CustomLogger } from '../../../shared/custom.logger';
 import { CreateTransactionDTO } from '../../infrastructure/dto/create.transaction.dto';
 import {
   CurrencyTypes,
@@ -8,9 +8,9 @@ import {
   Transaction,
   TransactionType,
 } from '../../domain/entity/transaction.entity';
-import { Either, left, right } from 'src/modules/shared/either';
-import { AccountRepositoryInterface } from 'src/modules/account/domain/repository/account.repository.interface';
-import { AccountDoesNotExist } from 'src/modules/account/application/exceptions/AccountDoesNotExist';
+import { Either, left, right } from '../../../shared/either';
+import { AccountRepositoryInterface } from '../../../account/domain/repository/account.repository.interface';
+import { AccountDoesNotExist } from '../../../account/application/exceptions/AccountDoesNotExist';
 import { BalanceInsufficient } from '../exceptions/BalanceInsufficient';
 import { TransactionProcessedEvent } from '../events/transaction-created.event';
 import { EventEmitter2 } from '@nestjs/event-emitter';

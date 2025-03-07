@@ -41,7 +41,7 @@ import { TransactionModule } from './modules/transaction/transaction.module';
         CreateAccountTable1741108788820,
         CreateTransactionTable1741200787558,
       ],
-      // synchronize: true,
+      synchronize: true,
       logging: true,
     }),
   ],

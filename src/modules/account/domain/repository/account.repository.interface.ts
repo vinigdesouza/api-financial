@@ -1,4 +1,4 @@
-import { Either } from 'src/modules/shared/either';
+import { Either } from '../../../shared/either';
 import { Account } from '../entity/account.entity';
 
 export interface AccountRepositoryInterface {
