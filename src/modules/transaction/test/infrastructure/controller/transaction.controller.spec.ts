@@ -105,7 +105,7 @@ describe('AccountController', () => {
 
     it('should throw NotFoundException when transaction not exists', async () => {
       const idAccount = faker.string.uuid();
-      findByAccountId.mockResolvedValueOnce(right(null));
+      findByAccountId.mockResolvedValueOnce(right([]));
 
       await expect(controller.findByAccount(idAccount)).rejects.toThrow(
         new NotFoundException(),
@@ -179,7 +179,7 @@ describe('AccountController', () => {
       handleCreate.mockResolvedValueOnce(right(transaction));
 
       const result = await controller.create(request);
-      expect(result).toEqual(transaction);
+      expect(result).toEqual(undefined);
       expect(handleCreate).toHaveBeenCalledTimes(1);
       expect(handleCreate.mock.calls[0][0]).toStrictEqual(request);
     });

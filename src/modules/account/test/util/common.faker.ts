@@ -65,7 +65,7 @@ export const buildAccountModel = (
 ): AccountModel => {
   const data: AccountModel = plainToClass(AccountModel, {
     ...{
-      name: faker.lorem.words(),
+      name: faker.lorem.word(),
       account_number: faker.number.int({ min: 1, max: 3000 }),
       account_balance: faker.number.int({ min: 1, max: 30000 }),
       account_type: AccountType.CONTA_CORRENTE,

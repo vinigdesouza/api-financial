@@ -55,7 +55,7 @@ export default class TransactionModel extends BaseEntity {
   static mapToEntity(model: TransactionModel): Transaction {
     const transaction = new Transaction(
       model.account_id,
-      model.amount,
+      parseFloat(model.amount.toString()),
       model.transaction_type as TransactionType,
       model.status as StatusTransaction,
       model.created_at,

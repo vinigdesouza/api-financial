@@ -2,13 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import {
-  Account,
-  AccountType,
-} from '../src/modules/account/domain/entity/account.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { AccountType } from '../src/modules/account/domain/entity/account.entity';
 import { AccountRepositoryInterface } from '../src/modules/account/domain/repository/account.repository.interface';
-import { CreateAccountTable1741108788820 } from '../src/migration/1741128600352-CreateAccountTable';
 import AccountModel from '../src/modules/account/infrastructure/models/account.model';
 import {
   buildAccount,

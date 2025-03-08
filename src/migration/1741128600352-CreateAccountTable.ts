@@ -7,7 +7,7 @@ export class CreateAccountTable1741108788820 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE account (
         id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-        name VARCHAR(255),
+        name VARCHAR(255) NOT NULL,
         account_number INT,
         account_balance DECIMAL(10, 2) NOT NULL DEFAULT 0,
         account_type VARCHAR(255) CHECK (account_type IN ('CONTA_CORRENTE', 'CONTA_POUPANCA')),

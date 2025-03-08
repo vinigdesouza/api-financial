@@ -12,7 +12,6 @@ import {
   Post,
 } from '@nestjs/common';
 import { CustomLogger } from '../../../shared/custom.logger';
-import { Either, left, right } from '../../../shared/either';
 import { TransactionRepositoryInterface } from '../../domain/repository/transaction.repository.interface';
 import { Transaction } from '../../domain/entity/transaction.entity';
 import { CreateTransactionDTO } from '../dto/create.transaction.dto';
@@ -72,7 +71,7 @@ export class TransactionController {
       throw new InternalServerErrorException(transactions.value.message);
     }
 
-    if (!transactions.value) {
+    if (transactions.value.length === 0) {
       this.logger.warn(`transactions with aacount id ${accountId} not found`);
       throw new NotFoundException();
     }
@@ -83,7 +82,7 @@ export class TransactionController {
   @Post()
   async create(
     @Body() createTransactionDto: CreateTransactionDTO,
-  ): Promise<Error | NotFoundException | BadRequestException | Transaction> {
+  ): Promise<Error | NotFoundException | BadRequestException | undefined> {
     this.logger.log('Creating transaction');
 
     const response =
@@ -105,7 +104,7 @@ export class TransactionController {
       throw new InternalServerErrorException(response.value.message);
     }
 
-    return response.value;
+    return undefined;
   }
 
   @Delete(':id')
