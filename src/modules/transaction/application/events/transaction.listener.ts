@@ -22,7 +22,7 @@ export class TransactionListener {
     const { accountId, amount, transactionType, destinationAccountId } = event;
 
     const accountResult = await this.accountRepository.findById(accountId);
-    if (accountResult.isLeft() || !accountResult.value) return;
+    if (accountResult.isLeft() || !accountResult.value) return undefined;
 
     const account = accountResult.value;
 
@@ -48,7 +48,8 @@ export class TransactionListener {
     if (destinationAccountId && transactionType === 'TRANSFER') {
       const destinationAccount =
         await this.accountRepository.findById(destinationAccountId);
-      if (destinationAccount.isLeft() || !destinationAccount.value) return;
+      if (destinationAccount.isLeft() || !destinationAccount.value)
+        return undefined;
 
       const newAccountBalanceDestination =
         Number(event.amount) + Number(destinationAccount.value.accountBalance);
@@ -56,6 +57,7 @@ export class TransactionListener {
       this.logger.log(
         `Updating destination account ${destinationAccountId} with new balance ${newAccountBalanceDestination}`,
       );
+
       await this.accountRepository.update(
         Account.update(
           destinationAccountId,

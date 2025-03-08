@@ -14,6 +14,7 @@ import {
   Account,
   AccountType,
 } from '../../account/domain/entity/account.entity';
+import { TransactionProcessedEvent } from '../../transaction/application/events/transaction-created.event';
 
 export const fakeLogger: Partial<CustomLogger> = {
   verbose: jest.fn(),
@@ -105,5 +106,22 @@ export const buildAccountModel = (
     },
     ...partial,
   });
+  return data;
+};
+
+export const buildTransactionProcessedEvent = (
+  partial: Partial<TransactionProcessedEvent>,
+): TransactionProcessedEvent => {
+  const data: TransactionProcessedEvent = plainToClass(
+    TransactionProcessedEvent,
+    {
+      ...{
+        accountId: faker.string.uuid(),
+        amount: faker.number.int({ min: 1, max: 30000 }),
+        transactionType: TransactionType.DEPOSIT,
+      },
+      ...partial,
+    },
+  );
   return data;
 };

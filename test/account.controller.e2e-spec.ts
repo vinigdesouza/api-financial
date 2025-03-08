@@ -72,8 +72,6 @@ describe('AccountController (e2e)', () => {
         .set(`Authorization`, `Bearer ${token}`)
         .expect(404);
 
-      console.log(response.body);
-
       expect(response.body.message).toEqual('Not Found');
     });
 
