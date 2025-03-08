@@ -2,15 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { CurrencyGatewayInterface } from '../../domain/gateway/currency.gateway.interface';
 import { CustomLogger } from '../../../shared/custom.logger';
 import { Either, left, right } from '../../../shared/either';
-import { HttpService } from '@nestjs/axios';
-import { AxiosError } from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
+
+const HOST_API_CURRENCY_CONVERSION = String(
+  process.env.HOST_API_CURRENCY_CONVERSION,
+);
 
 @Injectable()
 export class CurrencyGateway implements CurrencyGatewayInterface {
-  constructor(
-    private readonly logger: CustomLogger,
-    private readonly httpService: HttpService,
-  ) {}
+  private readonly timeoutInSeconds = 20;
+
+  constructor(private readonly logger: CustomLogger) {}
 
   async getCurrencyPrice(
     currency: string,
@@ -20,22 +22,27 @@ export class CurrencyGateway implements CurrencyGatewayInterface {
       `Getting currency price for ${currency} to ${targetCurrency}`,
     );
 
+    const options: AxiosRequestConfig = {
+      headers: {
+        Accept: 'application/json',
+      },
+      timeout: this.timeoutInSeconds * 1000,
+    };
+
+    const url = `${HOST_API_CURRENCY_CONVERSION}/${currency}-${targetCurrency}`;
+
     try {
-      const response = await this.httpService.axiosRef.get(
-        `https://economia.awesomeapi.com.br/last/${currency}-${targetCurrency}`,
-      );
-      if (!response || !response.data) {
-        throw new Error('No response or response data');
+      const { data } = await axios.get(url, options);
+
+      this.logger.log('Resposta da api de conversão de moeda', `data: ${data}`);
+      if (!data) {
+        throw new Error('Error fetching currency price');
       }
 
-      return right(response.data[currency + targetCurrency].ask);
+      return right(Number(data[currency + targetCurrency].ask));
     } catch (error) {
-      if (error instanceof AxiosError) {
-        this.logger.error(`Error fetching currency price: ${error.message}`);
-        return left(new Error('Error fetching currency price'));
-      }
       this.logger.error(`Unexpected error: ${error}`);
-      return left(new Error('Unexpected error occurred'));
+      return left(new Error('Error fetching currency price'));
     }
   }
 }
