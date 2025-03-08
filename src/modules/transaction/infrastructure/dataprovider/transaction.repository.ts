@@ -65,12 +65,18 @@ export class TransactionRepository implements TransactionRepositoryInterface {
 
     try {
       const transactionModel = TransactionModel.mapToModel(transaction);
-      await this.transactionRepository.save(transactionModel);
+      const transactionCreated =
+        await this.transactionRepository.save(transactionModel);
+
+      if (!transactionCreated) {
+        this.logger.error('Error when creating transaction');
+        return left(new Error('Error when creating transaction'));
+      }
 
       this.logger.log(
         `Transaction created: ${JSON.stringify(transactionModel)}`,
       );
-      return right(TransactionModel.mapToEntity(transactionModel));
+      return right(TransactionModel.mapToEntity(transactionCreated));
     } catch (error) {
       this.logger.error(`Error when creating transaction: ${error}`);
       return left(new Error('Error when creating transaction'));
