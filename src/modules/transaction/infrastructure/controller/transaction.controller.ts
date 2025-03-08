@@ -33,10 +33,7 @@ export class TransactionController {
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<
-    Either<
-      Error | InternalServerErrorException | NotFoundException,
-      Transaction
-    >
+    Error | InternalServerErrorException | NotFoundException | Transaction
   > {
     this.logger.log(`Finding transaction by id: ${id}`);
     const transaction = await this.transactionRepository.findById(id);
@@ -46,25 +43,22 @@ export class TransactionController {
         'It was not possible to retrieve the transaction',
         transaction.value.message,
       );
-      return left(new InternalServerErrorException(transaction.value.message));
+      throw new InternalServerErrorException(transaction.value.message);
     }
 
     if (!transaction.value) {
       this.logger.warn(`transaction with id ${id} not found`);
-      return left(new NotFoundException());
+      throw new NotFoundException();
     }
 
-    return right(transaction.value);
+    return transaction.value;
   }
 
   @Get('account/:accountId')
   async findByAccount(
     @Param('accountId', ParseUUIDPipe) accountId: string,
   ): Promise<
-    Either<
-      Error | InternalServerErrorException | NotFoundException,
-      Transaction[]
-    >
+    Error | InternalServerErrorException | NotFoundException | Transaction[]
   > {
     this.logger.log(`Finding transaction by account id: ${accountId}`);
     const transactions =
@@ -75,23 +69,21 @@ export class TransactionController {
         'It was not possible to retrieve the transaction',
         transactions.value.message,
       );
-      return left(new InternalServerErrorException(transactions.value.message));
+      throw new InternalServerErrorException(transactions.value.message);
     }
 
     if (!transactions.value) {
       this.logger.warn(`transactions with aacount id ${accountId} not found`);
-      return left(new NotFoundException());
+      throw new NotFoundException();
     }
 
-    return right(transactions.value);
+    return transactions.value;
   }
 
   @Post()
   async create(
     @Body() createTransactionDto: CreateTransactionDTO,
-  ): Promise<
-    Either<Error | NotFoundException | BadRequestException, Transaction>
-  > {
+  ): Promise<Error | NotFoundException | BadRequestException | Transaction> {
     this.logger.log('Creating transaction');
 
     const response =
@@ -104,35 +96,34 @@ export class TransactionController {
       );
 
       if (response.value instanceof AccountDoesNotExist) {
-        return left(new NotFoundException(response.value.message));
+        throw new NotFoundException(response.value.message);
       }
       if (response.value instanceof BalanceInsufficient) {
-        return left(new BadRequestException(response.value.message));
+        throw new BadRequestException(response.value.message);
       }
 
-      return left(new Error(response.value.message));
+      throw new InternalServerErrorException(response.value.message);
     }
 
-    return right(response.value);
+    return response.value;
   }
 
   @Delete(':id')
   async delete(
     @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<Either<InternalServerErrorException, undefined>> {
+  ): Promise<InternalServerErrorException | undefined> {
     this.logger.log(`Deleting transaction by id: ${id}`);
-    const transactionDeleted = await this.transactionRepository.delete(id);
+    const transactionDeleted =
+      await this.transactionRepository.deleteTransaction(id);
 
     if (transactionDeleted.isLeft()) {
       this.logger.error(
         'It was not possible to delete transaction',
         transactionDeleted.value.message,
       );
-      return left(
-        new InternalServerErrorException(transactionDeleted.value.message),
-      );
+      throw new InternalServerErrorException(transactionDeleted.value.message);
     }
 
-    return right(undefined);
+    return undefined;
   }
 }

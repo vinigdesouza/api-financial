@@ -77,7 +77,7 @@ export class TransactionRepository implements TransactionRepositoryInterface {
     }
   }
 
-  async delete(id: string): Promise<Either<Error, null>> {
+  async deleteTransaction(id: string): Promise<Either<Error, null>> {
     this.logger.log(`Deleting transaction with id: ${id}`);
 
     try {
