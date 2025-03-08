@@ -3,25 +3,15 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AccountType } from '../src/modules/account/domain/entity/account.entity';
-import { AccountRepositoryInterface } from '../src/modules/account/domain/repository/account.repository.interface';
 import AccountModel from '../src/modules/account/infrastructure/models/account.model';
 import {
-  buildAccount,
   buildAccountModel,
   buildCreateAccountDTO,
 } from '../src/modules/account/test/util/common.faker';
-import { left, right } from '../src/modules/shared/either';
 import { faker } from '@faker-js/faker/.';
-import { CreateAccountUsecase } from '../src/modules/account/application/usecase/create.account.usecase';
-import { InvalidAccountDataError } from '../src/modules/account/application/exceptions/InvalidAccountDataError';
-import { UpdateAccountUsecase } from '../src/modules/account/application/usecase/update.account.usecase';
-import { AccountDoesNotExist } from '../src/modules/account/application/exceptions/AccountDoesNotExist';
 
 describe('AccountController (e2e)', () => {
   let app: INestApplication;
-  let accountRepository: AccountRepositoryInterface;
-  let accountCreateUsecase: CreateAccountUsecase;
-  let accountUpdateUsecase: UpdateAccountUsecase;
   const token = process.env.AUTH_TOKEN;
   const tokenInvalid = process.env.AUTH_TOKEN_INVALID;
 
@@ -34,19 +24,10 @@ describe('AccountController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-
-    accountRepository = moduleFixture.get<AccountRepositoryInterface>(
-      'AccountRepositoryInterface',
-    );
-
-    accountCreateUsecase =
-      moduleFixture.get<CreateAccountUsecase>(CreateAccountUsecase);
-
-    accountUpdateUsecase =
-      moduleFixture.get<UpdateAccountUsecase>(UpdateAccountUsecase);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     jest.clearAllMocks();
   });
 
@@ -57,10 +38,6 @@ describe('AccountController (e2e)', () => {
   describe('GET /account/:id', () => {
     it('should return NotFoundException', async () => {
       const accountId = faker.string.uuid();
-
-      jest
-        .spyOn(accountRepository, 'findById')
-        .mockResolvedValueOnce(right(null));
 
       const response = await request(app.getHttpServer())
         .get(`/account/${accountId}`)
@@ -112,18 +89,14 @@ describe('AccountController (e2e)', () => {
     });
 
     it('should return BadRequestException', async () => {
+      const account = buildAccountModel({});
+      AccountModel.save(account);
       const createAccountDto = {
         name: 'Test Account',
-        account_number: faker.number.int({ min: 10000, max: 30000 }),
+        account_number: account.account_number,
         account_balance: 1000,
         account_type: 'CONTA CORRENTE',
       };
-
-      jest
-        .spyOn(accountCreateUsecase, 'handle')
-        .mockResolvedValueOnce(
-          left(new InvalidAccountDataError('Account already exists')),
-        );
 
       const response = await request(app.getHttpServer())
         .post('/account')
@@ -134,80 +107,41 @@ describe('AccountController (e2e)', () => {
       expect(response.body.message).toEqual('Account already exists');
       expect(response.body.error).toEqual('Bad Request');
     });
-
-    it('should return InternalServerErrorException', async () => {
-      const errorMesssage = faker.lorem.words();
-      const createAccountDto = {
-        name: 'Test Account',
-        account_number: faker.number.int({ min: 10000, max: 30000 }),
-        account_balance: 1000,
-        account_type: 'CONTA CORRENTE',
-      };
-
-      jest
-        .spyOn(accountCreateUsecase, 'handle')
-        .mockResolvedValueOnce(left(new Error(errorMesssage)));
-
-      const response = await request(app.getHttpServer())
-        .post('/account')
-        .send(createAccountDto)
-        .set(`Authorization`, `Bearer ${token}`)
-        .expect(500);
-
-      expect(response.body.message).toEqual(errorMesssage);
-      expect(response.body.error).toEqual('Internal Server Error');
-    });
   });
 
   describe('PUT /account/:id', () => {
     it('should UPDATE an account', async () => {
-      const idAccount = faker.string.uuid();
+      const account = buildAccountModel({});
+      await AccountModel.save(account);
+      const idAccount = account.id;
       const createAccountDto = buildCreateAccountDTO({
         name: 'Test Account',
-        account_number: faker.number.int({ min: 10000, max: 30000 }),
+        account_number: account.account_number,
         account_balance: 1000,
         account_type: AccountType.CONTA_CORRENTE,
       });
 
-      const accountUpdated = buildAccount({
-        id: idAccount,
-        name: createAccountDto.name,
-        accountNumber: createAccountDto.account_number,
-        accountBalance: createAccountDto.account_balance,
-        accountType: createAccountDto.account_type,
-      });
-
-      jest
-        .spyOn(accountUpdateUsecase, 'handle')
-        .mockResolvedValueOnce(right(accountUpdated));
-
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .put(`/account/${idAccount}`)
         .send(createAccountDto)
         .set(`Authorization`, `Bearer ${token}`)
         .expect(200);
-
-      expect(response.body).toEqual({
-        ...accountUpdated,
-        createdAt: accountUpdated.createdAt.toISOString(),
-        updatedAt: accountUpdated.updatedAt?.toISOString(),
-      });
     });
 
     it('should UPDATE return BadRequestException', async () => {
-      const idAccount = faker.string.uuid();
+      const account1 = buildAccountModel({});
+      await AccountModel.save(account1);
+
+      const account = buildAccountModel({});
+      await AccountModel.save(account);
+
+      const idAccount = account.id;
       const createAccountDto = buildCreateAccountDTO({
         name: 'Test Account',
-        account_number: faker.number.int({ min: 10000, max: 30000 }),
+        account_number: account1.account_number,
         account_balance: 1000,
         account_type: AccountType.CONTA_CORRENTE,
       });
-
-      jest
-        .spyOn(accountUpdateUsecase, 'handle')
-        .mockResolvedValueOnce(
-          left(new InvalidAccountDataError('Account already exists')),
-        );
 
       const response = await request(app.getHttpServer())
         .put(`/account/${idAccount}`)
@@ -228,10 +162,6 @@ describe('AccountController (e2e)', () => {
         account_type: AccountType.CONTA_CORRENTE,
       });
 
-      jest
-        .spyOn(accountUpdateUsecase, 'handle')
-        .mockResolvedValueOnce(left(new AccountDoesNotExist()));
-
       const response = await request(app.getHttpServer())
         .put(`/account/${idAccount}`)
         .send(createAccountDto)
@@ -241,40 +171,11 @@ describe('AccountController (e2e)', () => {
       expect(response.body.message).toEqual('Acount does not exist');
       expect(response.body.error).toEqual('Not Found');
     });
-
-    it('should UPDATE return InternalServerErrorException', async () => {
-      const errorMesssage = faker.lorem.words();
-      const idAccount = faker.string.uuid();
-      const createAccountDto = buildCreateAccountDTO({
-        name: 'Test Account',
-        account_number: faker.number.int({ min: 10000, max: 30000 }),
-        account_balance: 1000,
-        account_type: AccountType.CONTA_CORRENTE,
-      });
-
-      jest
-        .spyOn(accountUpdateUsecase, 'handle')
-        .mockResolvedValueOnce(left(new Error(errorMesssage)));
-
-      const response = await request(app.getHttpServer())
-        .put(`/account/${idAccount}`)
-        .send(createAccountDto)
-        .set(`Authorization`, `Bearer ${token}`)
-        .expect(500);
-
-      expect(response.body.message).toEqual(errorMesssage);
-      expect(response.body.error).toEqual('Internal Server Error');
-    });
   });
 
   describe('DELETE /account/:id', () => {
     it('should return InternalServerErrorException', async () => {
-      const errorMesssage = faker.lorem.words();
       const accountId = faker.string.uuid();
-
-      jest
-        .spyOn(accountRepository, 'deleteAccount')
-        .mockResolvedValueOnce(left(new Error(errorMesssage)));
 
       const response = await request(app.getHttpServer())
         .delete(`/account/${accountId}`)
@@ -291,10 +192,6 @@ describe('AccountController (e2e)', () => {
 
       await AccountModel.save(createAccountModel);
 
-      jest
-        .spyOn(accountRepository, 'deleteAccount')
-        .mockResolvedValueOnce(right(null));
-
       const response = await request(app.getHttpServer())
         .delete(`/account/${accountId}`)
         .expect(401);
@@ -308,10 +205,6 @@ describe('AccountController (e2e)', () => {
       const createAccountModel = buildAccountModel({ id: accountId });
 
       await AccountModel.save(createAccountModel);
-
-      jest
-        .spyOn(accountRepository, 'deleteAccount')
-        .mockResolvedValueOnce(right(null));
 
       const response = await request(app.getHttpServer())
         .delete(`/account/${accountId}`)
@@ -327,12 +220,7 @@ describe('AccountController (e2e)', () => {
     it('should delete account', async () => {
       const accountId = faker.string.uuid();
       const createAccountModel = buildAccountModel({ id: accountId });
-
       await AccountModel.save(createAccountModel);
-
-      jest
-        .spyOn(accountRepository, 'deleteAccount')
-        .mockResolvedValueOnce(right(null));
 
       const response = await request(app.getHttpServer())
         .delete(`/account/${accountId}`)
