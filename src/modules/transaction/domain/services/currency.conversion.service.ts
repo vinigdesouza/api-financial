@@ -7,7 +7,7 @@ import { Either, left, right } from '../../../shared/either';
 export class CurrencyConversionService {
   constructor(
     @Inject('CurrencyGatewayInterface')
-    private readonly CurrencyGateway: CurrencyGatewayInterface,
+    private readonly currencyGateway: CurrencyGatewayInterface,
     private readonly logger: CustomLogger,
   ) {}
 
@@ -20,7 +20,7 @@ export class CurrencyConversionService {
       `Converting currency from ${currency} to ${targetCurrency}`,
     );
 
-    const getCurrencyPrice = await this.CurrencyGateway.getCurrencyPrice(
+    const getCurrencyPrice = await this.currencyGateway.getCurrencyPrice(
       currency,
       targetCurrency,
     );

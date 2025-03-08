@@ -12,7 +12,7 @@ import { TransactionListener } from './application/events/transaction.listener';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { HttpModule } from '@nestjs/axios';
 import { CurrencyGateway } from './infrastructure/gateway/currency.gateway';
-import { CurrencyConversionService } from './domain/services/CurrencyConversionService';
+import { CurrencyConversionService } from './domain/services/currency.conversion.service';
 
 @Module({
   imports: [

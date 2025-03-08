@@ -14,7 +14,7 @@ import { AccountDoesNotExist } from '../../../account/application/exceptions/Acc
 import { BalanceInsufficient } from '../exceptions/BalanceInsufficient';
 import { TransactionProcessedEvent } from '../events/transaction-created.event';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CurrencyConversionService } from '../../domain/services/CurrencyConversionService';
+import { CurrencyConversionService } from '../../domain/services/currency.conversion.service';
 
 @Injectable()
 export class CreateTransactionUsecase {

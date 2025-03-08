@@ -1,4 +1,4 @@
-import { CurrencyConversionService } from '../../../transaction/domain/services/CurrencyConversionService';
+import { CurrencyConversionService } from '../../../transaction/domain/services/currency.conversion.service';
 
 export const convertCurrency: jest.Mock = jest.fn();
 

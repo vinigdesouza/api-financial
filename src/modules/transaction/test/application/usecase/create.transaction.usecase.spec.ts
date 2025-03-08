@@ -17,13 +17,16 @@ import {
   fakeAccountRepository,
   findById as findByIdAccount,
 } from '../../../../shared/test/mocks/account.repository.mock';
-import { CurrencyConversionService } from '../../../../transaction/domain/services/CurrencyConversionService';
+import { CurrencyConversionService } from '../../../../transaction/domain/services/currency.conversion.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   convertCurrency,
   fakeCurrencyConversionService,
 } from '../../../../shared/test/mocks/currency.service.mock';
-import { emit, fakeEventEmitter2 } from '../../../../shared/test/mocks/eventEmitter.mock';
+import {
+  emit,
+  fakeEventEmitter2,
+} from '../../../../shared/test/mocks/eventEmitter.mock';
 import {
   CurrencyTypes,
   StatusTransaction,
