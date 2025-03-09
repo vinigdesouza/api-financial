@@ -175,7 +175,6 @@ export class AccountRepository implements AccountRepositoryInterface {
         }),
       );
 
-      console.log('accounts returnes', accounts);
       this.logger.log(
         `Accounts with transactions found: ${JSON.stringify(accountsWithTransactions)}`,
       );

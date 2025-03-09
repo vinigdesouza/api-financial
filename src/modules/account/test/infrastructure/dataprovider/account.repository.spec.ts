@@ -4,15 +4,17 @@ import { CustomLogger } from '../../../../shared/custom.logger';
 import {
   buildAccount,
   buildAccountModel,
+  buildTransactionModel,
   fakeLogger,
-} from '../../util/common.faker';
-import { DataSource, Repository } from 'typeorm';
+} from '../../../../shared/test/common.faker';
+import { Between, DataSource, Repository } from 'typeorm';
 import { mock } from 'jest-mock-extended';
 import { AccountRepository } from '../../../infrastructure/dataprovider/account.repository';
 import { Test, TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker/.';
 import { left, right } from '../../../../shared/either';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import TransactionModel from '../../../../transaction/infrastructure/models/transaction.model';
 
 describe('AccountRepository', () => {
   let repository: AccountRepository;
@@ -88,7 +90,7 @@ describe('AccountRepository', () => {
         .mockResolvedValueOnce(accountModel);
 
       await expect(repository.findById(idAccount)).resolves.toStrictEqual(
-        right(AccountModel.mapToEntity(accountModel)),
+        right(AccountModel.mapToEntity(accountModel, [])),
       );
       expect(accountRepositoryMock.findOne).toHaveBeenCalledTimes(1);
       expect(accountRepositoryMock.findOne).toHaveBeenCalledWith({
@@ -162,7 +164,9 @@ describe('AccountRepository', () => {
 
       await expect(
         repository.findByAccountNumber(numberAccount),
-      ).resolves.toStrictEqual(right(AccountModel.mapToEntity(accountModel)));
+      ).resolves.toStrictEqual(
+        right(AccountModel.mapToEntity(accountModel, [])),
+      );
       expect(accountRepositoryMock.createQueryBuilder).toHaveBeenCalledTimes(1);
       expect(accountRepositoryMock.createQueryBuilder).toHaveBeenCalledWith(
         'account',
@@ -216,7 +220,7 @@ describe('AccountRepository', () => {
         .mockResolvedValueOnce(accountCreated);
 
       await expect(repository.create(account)).resolves.toStrictEqual(
-        right(AccountModel.mapToEntity(accountCreated)),
+        right(AccountModel.mapToEntity(accountCreated, [])),
       );
       expect(accountRepositoryMock.save).toHaveBeenCalledTimes(1);
       expect(accountRepositoryMock.save).toHaveBeenCalledWith(model);
@@ -262,7 +266,7 @@ describe('AccountRepository', () => {
         .mockResolvedValueOnce(accountCreated);
 
       await expect(repository.update(account)).resolves.toStrictEqual(
-        right(AccountModel.mapToEntity(accountCreated)),
+        right(AccountModel.mapToEntity(accountCreated, [])),
       );
       expect(accountRepositoryMock.save).toHaveBeenCalledTimes(1);
       expect(accountRepositoryMock.save).toHaveBeenCalledWith(model);
@@ -336,6 +340,170 @@ describe('AccountRepository', () => {
       });
       expect(accountRepositoryMock.delete).toHaveBeenCalledTimes(1);
       expect(accountRepositoryMock.delete).toHaveBeenCalledWith(idAccount);
+    });
+  });
+
+  describe('Método getAccountStatement', () => {
+    it('Should return ERROR when getMany() fail', async () => {
+      const errorMessage = faker.lorem.words();
+      const andWhereMock = jest.fn().mockReturnThis();
+      const whereMock = jest.fn().mockReturnThis();
+      const getManyMock = jest
+        .fn()
+        .mockRejectedValueOnce(new Error(errorMessage));
+
+      accountRepositoryMock.createQueryBuilder = jest.fn().mockReturnValueOnce({
+        where: whereMock,
+        andWhere: andWhereMock,
+        getMany: getManyMock,
+      });
+      const numberAccount = faker.number.int({ min: 1, max: 3000 });
+
+      await expect(
+        repository.getAccountStatement({
+          accountNumber: numberAccount,
+          startDate: new Date('2024-01-01 00:00:00'),
+          endDate: new Date('2024-01-10 23:59:59'),
+        }),
+      ).resolves.toStrictEqual(
+        left(new Error('Error when searching for account by filters')),
+      );
+      expect(accountRepositoryMock.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(accountRepositoryMock.createQueryBuilder).toHaveBeenCalledWith(
+        'account',
+      );
+      expect(whereMock).toHaveBeenCalledWith(
+        'account.account_number = :accountNumber',
+        { accountNumber: numberAccount },
+      );
+    });
+
+    it('Should return NULL when getMany() return nothing', async () => {
+      const whereMock = jest.fn().mockReturnThis();
+      const getManyMock = jest.fn().mockReturnValueOnce([]);
+
+      accountRepositoryMock.createQueryBuilder = jest.fn().mockReturnValueOnce({
+        where: whereMock,
+        getMany: getManyMock,
+      });
+      const numberAccount = faker.number.int({ min: 1, max: 3000 });
+
+      await expect(
+        repository.getAccountStatement({
+          accountNumber: numberAccount,
+          startDate: new Date('2024-01-01 00:00:00'),
+          endDate: new Date('2024-01-10 23:59:59'),
+        }),
+      ).resolves.toStrictEqual(right([]));
+      expect(accountRepositoryMock.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(accountRepositoryMock.createQueryBuilder).toHaveBeenCalledWith(
+        'account',
+      );
+      expect(whereMock).toHaveBeenCalledWith(
+        'account.account_number = :accountNumber',
+        { accountNumber: numberAccount },
+      );
+    });
+
+    it('Should return Account entity when getMany finding account but has no transactions', async () => {
+      const numberAccount = faker.number.int({ min: 1, max: 3000 });
+      const accountModel = buildAccountModel({ account_number: numberAccount });
+      const whereMock = jest.fn().mockReturnThis();
+      const getManyMock = jest.fn().mockReturnValueOnce([accountModel]);
+
+      accountRepositoryMock.createQueryBuilder = jest.fn().mockReturnValueOnce({
+        where: whereMock,
+        getMany: getManyMock,
+      });
+
+      TransactionModel.find = jest.fn().mockReturnValueOnce([]);
+
+      await expect(
+        repository.getAccountStatement({
+          accountNumber: numberAccount,
+          startDate: new Date('2024-01-01 00:00:00'),
+          endDate: new Date('2024-01-10 23:59:59'),
+        }),
+      ).resolves.toStrictEqual(
+        right([AccountModel.mapToEntity(accountModel, [])]),
+      );
+      expect(accountRepositoryMock.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(accountRepositoryMock.createQueryBuilder).toHaveBeenCalledWith(
+        'account',
+      );
+      expect(whereMock).toHaveBeenCalledWith(
+        'account.account_number = :accountNumber',
+        { accountNumber: numberAccount },
+      );
+      expect(TransactionModel.find).toHaveBeenCalledTimes(1);
+      expect(TransactionModel.find).toHaveBeenCalledWith({
+        where: {
+          account: { id: accountModel.id },
+          created_at: Between(
+            new Date('2024-01-01 00:00:00'),
+            new Date('2024-01-10 23:59:59'),
+          ),
+        },
+        order: { created_at: 'DESC' },
+        take: undefined,
+        skip: undefined,
+      });
+    });
+
+    it('Should return Account entity when getMany finding account with transactions', async () => {
+      const numberAccount = faker.number.int({ min: 1, max: 3000 });
+      const accountModel = buildAccountModel({ account_number: numberAccount });
+      const transactions = [
+        buildTransactionModel({ account_id: accountModel.id }),
+        buildTransactionModel({ account_id: accountModel.id }),
+      ];
+
+      const whereMock = jest.fn().mockReturnThis();
+      const andWhereMock = jest.fn().mockReturnThis();
+      const getManyMock = jest.fn().mockReturnValueOnce([accountModel]);
+
+      accountRepositoryMock.createQueryBuilder = jest.fn().mockReturnValueOnce({
+        where: whereMock,
+        andWhere: andWhereMock,
+        getMany: getManyMock,
+      });
+
+      TransactionModel.find = jest.fn().mockReturnValueOnce(transactions);
+
+      await expect(
+        repository.getAccountStatement({
+          accountNumber: numberAccount,
+          startDate: new Date('2024-01-01 00:00:00'),
+          endDate: new Date('2024-01-10 23:59:59'),
+          accountId: accountModel.id,
+        }),
+      ).resolves.toStrictEqual(
+        right([AccountModel.mapToEntity(accountModel, transactions)]),
+      );
+      expect(accountRepositoryMock.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(accountRepositoryMock.createQueryBuilder).toHaveBeenCalledWith(
+        'account',
+      );
+      expect(whereMock).toHaveBeenCalledWith(
+        'account.account_number = :accountNumber',
+        { accountNumber: numberAccount },
+      );
+      expect(andWhereMock).toHaveBeenCalledWith('account.id = :accountId', {
+        accountId: accountModel.id,
+      });
+      expect(TransactionModel.find).toHaveBeenCalledTimes(1);
+      expect(TransactionModel.find).toHaveBeenCalledWith({
+        where: {
+          account: { id: accountModel.id },
+          created_at: Between(
+            new Date('2024-01-01 00:00:00'),
+            new Date('2024-01-10 23:59:59'),
+          ),
+        },
+        order: { created_at: 'DESC' },
+        take: undefined,
+        skip: undefined,
+      });
     });
   });
 });

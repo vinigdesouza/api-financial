@@ -6,7 +6,7 @@ describe('Model AccountModel', () => {
   it('Deve mapear uma Entidade com base em um modelo', () => {
     const model = buildAccountModel({});
 
-    const entity = AccountModel.mapToEntity(model);
+    const entity = AccountModel.mapToEntity(model, []);
 
     expect(entity.id).toStrictEqual(model.id);
     expect(entity.accountBalance).toStrictEqual(model.account_balance);

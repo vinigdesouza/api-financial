@@ -8,3 +8,4 @@ process.env.DB_USERNAME = 'postgres';
 process.env.DB_PASSWORD = 'vini.postgress.dev';
 process.env.DB_DATABASE = 'financial_db';
 process.env.HOST_API_CURRENCY_CONVERSION = 'api_domain';
+process.env.REDIS_HOST = 'localhost';

@@ -13,6 +13,11 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { HttpModule } from '@nestjs/axios';
 import { CurrencyGateway } from './infrastructure/gateway/currency.gateway';
 import { CurrencyConversionService } from './domain/services/currency.conversion.service';
+import { BullModule } from '@nestjs/bullmq';
+import { TransactionService } from './domain/services/transaction.service';
+import { TransactionProcessor } from './application/scheduled/transaction.processor';
+import { TransactionScheduler } from './application/scheduled/transaction.scheduler';
+import { TransactionQueue } from './application/scheduled/transaction.queue';
 
 @Module({
   imports: [
@@ -23,6 +28,13 @@ import { CurrencyConversionService } from './domain/services/currency.conversion
     }),
     TypeOrmModule.forFeature([TransactionModel, AccountModel]),
     EventEmitterModule.forRoot(),
+    BullModule.registerQueue({ name: 'transactionQueue' }),
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: Number(process.env.REDIS_PORT) || 6379,
+      },
+    }),
   ],
   controllers: [TransactionController],
   providers: [
@@ -43,7 +55,16 @@ import { CurrencyConversionService } from './domain/services/currency.conversion
       useClass: CurrencyGateway,
     },
     TransactionListener,
+    TransactionService,
+    TransactionProcessor,
+    TransactionScheduler,
+    TransactionQueue,
   ],
-  exports: ['TransactionRepositoryInterface', CreateTransactionUsecase],
+  exports: [
+    'TransactionRepositoryInterface',
+    CreateTransactionUsecase,
+    TransactionService,
+    TransactionScheduler,
+  ],
 })
 export class TransactionModule {}
