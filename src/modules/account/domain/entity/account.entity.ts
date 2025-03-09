@@ -1,9 +1,25 @@
+import { Transaction } from '../../../transaction/domain/entity/transaction.entity';
+
 export enum AccountType {
   CONTA_CORRENTE = 'CONTA CORRENTE',
   CONTA_POUPANCA = 'CONTA POUPANCA',
 }
 
+export type StatementFilters = {
+  accountNumber: number;
+  startDate: Date;
+  endDate: Date;
+  accountId?: string;
+  transactionType?: string;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
+};
+
 export class Account {
+  private transactions: Transaction[] = [];
+
   constructor(
     public readonly name: string,
     public readonly accountNumber: number,
@@ -13,6 +29,10 @@ export class Account {
     public readonly id?: string,
     public readonly updatedAt?: Date,
   ) {}
+
+  adicionarTransaction(transaction: Transaction): void {
+    this.transactions.push(transaction);
+  }
 
   static create(
     name: string,

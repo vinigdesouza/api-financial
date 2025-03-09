@@ -1,5 +1,5 @@
 import { Either } from '../../../shared/either';
-import { Account } from '../entity/account.entity';
+import { Account, StatementFilters } from '../entity/account.entity';
 
 export interface AccountRepositoryInterface {
   findById(id: string): Promise<Either<Error, Account | null>>;
@@ -9,4 +9,7 @@ export interface AccountRepositoryInterface {
   findByAccountNumber(
     accountNumber: number,
   ): Promise<Either<Error, Account | null>>;
+  getAccountStatement(
+    filters: StatementFilters,
+  ): Promise<Either<Error, Account[]>>;
 }

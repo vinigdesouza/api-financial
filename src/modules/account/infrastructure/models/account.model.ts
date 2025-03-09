@@ -40,7 +40,16 @@ export default class AccountModel extends BaseEntity {
   )
   received_transactions: TransactionModel[];
 
-  static mapToEntity(model: AccountModel): Account {
+  static mapToEntity(
+    model: AccountModel,
+    transactionsModel: TransactionModel[],
+  ): Account {
+    const transactions = [
+      ...transactionsModel.map((transactionModel) =>
+        TransactionModel.mapToEntity(transactionModel),
+      ),
+    ];
+
     const account = new Account(
       model.name,
       model.account_number,
@@ -50,6 +59,11 @@ export default class AccountModel extends BaseEntity {
       model.id,
       model.updated_at,
     );
+
+    transactions.forEach((transaction) => {
+      account.adicionarTransaction(transaction);
+    });
+
     return account;
   }
 

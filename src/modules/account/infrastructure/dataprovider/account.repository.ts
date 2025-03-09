@@ -1,11 +1,12 @@
-import { DataSource, Repository } from 'typeorm';
+import { Between, DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Either, left, right } from '../../../shared/either';
-import { Account } from '../../domain/entity/account.entity';
+import { Account, StatementFilters } from '../../domain/entity/account.entity';
 import { AccountRepositoryInterface } from '../../domain/repository/account.repository.interface';
 import { Injectable } from '@nestjs/common';
 import { CustomLogger } from '../../../shared/custom.logger';
 import AccountModel from '../models/account.model';
+import TransactionModel from '../../../transaction/infrastructure/models/transaction.model';
 
 @Injectable()
 export class AccountRepository implements AccountRepositoryInterface {
@@ -26,7 +27,7 @@ export class AccountRepository implements AccountRepositoryInterface {
 
       if (account) {
         this.logger.log(`Account found: ${JSON.stringify(account)}`);
-        return right(AccountModel.mapToEntity(account));
+        return right(AccountModel.mapToEntity(account, []));
       }
 
       this.logger.warn(`Account with ID ${id} not found`);
@@ -51,7 +52,7 @@ export class AccountRepository implements AccountRepositoryInterface {
 
       if (account) {
         this.logger.log(`Account found: ${JSON.stringify(account)}`);
-        return right(AccountModel.mapToEntity(account));
+        return right(AccountModel.mapToEntity(account, []));
       }
 
       this.logger.warn(`Account with number ${accountNumber} not found`);
@@ -77,7 +78,7 @@ export class AccountRepository implements AccountRepositoryInterface {
       }
 
       this.logger.log(`Account created: ${JSON.stringify(accountCreated)}`);
-      return right(AccountModel.mapToEntity(accountCreated));
+      return right(AccountModel.mapToEntity(accountCreated, []));
     } catch (error) {
       this.logger.error(`Error when creating account: ${error}`);
       return left(new Error('Error when creating account'));
@@ -98,7 +99,7 @@ export class AccountRepository implements AccountRepositoryInterface {
         return left(new Error('Error when updating account'));
       }
       this.logger.log(`Account updated: ${JSON.stringify(accountUpdated)}`);
-      return right(AccountModel.mapToEntity(accountUpdated));
+      return right(AccountModel.mapToEntity(accountUpdated, []));
     } catch (error) {
       this.logger.error(`Error when updating account: ${error}`);
       return left(new Error('Error when updating account'));
@@ -122,6 +123,67 @@ export class AccountRepository implements AccountRepositoryInterface {
     } catch (error) {
       this.logger.error(`Error when deleting account: ${error}`);
       return left(new Error('Error when deleting account'));
+    }
+  }
+
+  async getAccountStatement(
+    filters: StatementFilters,
+  ): Promise<Either<Error, Account[]>> {
+    this.logger.log(`Getting account statement: ${JSON.stringify(filters)}`);
+
+    try {
+      const query = this.accountRepository
+        .createQueryBuilder('account')
+        .where('account.account_number = :accountNumber', {
+          accountNumber: filters.accountNumber,
+        });
+
+      if (filters.accountId) {
+        query.andWhere('account.id = :accountId', {
+          accountId: filters.accountId,
+        });
+      }
+
+      const accounts = await query.getMany();
+
+      if (accounts.length === 0) {
+        this.logger.warn(
+          `Account with number ${filters.accountNumber} not found`,
+        );
+        return right([]);
+      }
+
+      const accountsWithTransactions = await Promise.all(
+        accounts.map(async (account) => {
+          const transactions = await TransactionModel.find({
+            where: {
+              account: { id: account.id },
+              created_at: Between(filters.startDate, filters.endDate),
+              ...(filters.transactionType && {
+                transaction_type: filters.transactionType,
+              }),
+            },
+            order: {
+              created_at:
+                filters.sortOrder?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC',
+            },
+            take: filters.limit,
+            skip: filters.offset,
+          });
+
+          return AccountModel.mapToEntity(account, transactions);
+        }),
+      );
+
+      console.log('accounts returnes', accounts);
+      this.logger.log(
+        `Accounts with transactions found: ${JSON.stringify(accountsWithTransactions)}`,
+      );
+
+      return right(accountsWithTransactions);
+    } catch (error) {
+      this.logger.error(`Error when searching for account by filter: ${error}`);
+      return left(new Error('Error when searching for account by filters'));
     }
   }
 }

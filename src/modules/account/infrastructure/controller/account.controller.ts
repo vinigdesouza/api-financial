@@ -11,6 +11,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { CustomLogger } from '../../../shared/custom.logger';
 import { AccountRepositoryInterface } from '../../domain/repository/account.repository.interface';
@@ -31,6 +32,46 @@ export class AccountController {
     @Inject() readonly createAccountUsecase: CreateAccountUsecase,
     @Inject() readonly updateAccountUsecase: UpdateAccountUsecase,
   ) {}
+
+  @Get('statement')
+  async generateAccountStatement(
+    @Query('account_number') accountNumber: string,
+    @Query('start_date') startDate: string,
+    @Query('end_date') endDate: string,
+    @Query('account_id') accountId?: string,
+    @Query('transaction_type') transactionType?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+    @Query('sort_by') sortBy?: string,
+    @Query('sort_order') sortOrder?: 'ASC' | 'DESC',
+  ): Promise<InternalServerErrorException | Account[]> {
+    this.logger.log('Generating account statement');
+
+    const statement = await this.accountRepository.getAccountStatement({
+      accountNumber: parseInt(accountNumber),
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      accountId: accountId,
+      transactionType,
+      limit: limit ? parseInt(limit, 10) : 10,
+      offset: offset ? parseInt(offset, 10) : 0,
+      sortBy: sortBy || 'createdAt',
+      sortOrder:
+        sortOrder && ['ASC', 'DESC'].includes(sortOrder.toUpperCase())
+          ? (sortOrder.toUpperCase() as 'ASC' | 'DESC')
+          : 'DESC',
+    });
+
+    if (statement.isLeft()) {
+      this.logger.error(
+        'Error when generating account statement',
+        statement.value.message,
+      );
+      throw new InternalServerErrorException(statement.value.message);
+    }
+
+    return statement.value;
+  }
 
   @Get(':id')
   async findOne(

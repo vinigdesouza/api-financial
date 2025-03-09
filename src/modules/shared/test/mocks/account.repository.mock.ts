@@ -5,6 +5,7 @@ export const create: jest.Mock = jest.fn();
 export const update: jest.Mock = jest.fn();
 export const deleteAccount: jest.Mock = jest.fn();
 export const findByAccountNumber: jest.Mock = jest.fn();
+export const getAccountStatement: jest.Mock = jest.fn();
 
 export const fakeAccountRepository = <AccountRepositoryInterface>{
   findById,
@@ -12,4 +13,5 @@ export const fakeAccountRepository = <AccountRepositoryInterface>{
   update,
   deleteAccount,
   findByAccountNumber,
+  getAccountStatement,
 };
