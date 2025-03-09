@@ -26,7 +26,7 @@ export class UpdateAccountUsecase {
 
     this.logger.log(`Finding account by id: ${idAccount}`);
     const accountExists = await this.accountRepository.findById(idAccount);
-    console.log('accountExists', accountExists);
+
     if (accountExists.isLeft()) {
       this.logger.error(
         'It was not possible to retrieve the account',
