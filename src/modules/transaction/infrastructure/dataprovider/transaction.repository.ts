@@ -5,7 +5,15 @@ import { Injectable } from '@nestjs/common';
 import { CustomLogger } from '../../../shared/custom.logger';
 import { TransactionRepositoryInterface } from '../../domain/repository/transaction.repository.interface';
 import TransactionModel from '../models/transaction.model';
-import { Transaction } from '../../domain/entity/transaction.entity';
+import {
+  StatusTransaction,
+  Transaction,
+} from '../../domain/entity/transaction.entity';
+import {
+  ScheduledTransaction,
+  StatusScheduledTransaction,
+} from '../../domain/entity/scheduledTransaction.entity';
+import ScheduledTransactionModel from '../models/scheduledTransaction.model';
 
 @Injectable()
 export class TransactionRepository implements TransactionRepositoryInterface {
@@ -60,13 +68,15 @@ export class TransactionRepository implements TransactionRepositoryInterface {
     }
   }
 
-  async create(transaction: Transaction): Promise<Either<Error, Transaction>> {
+  async create(
+    transaction: Omit<Transaction, 'id'>,
+  ): Promise<Either<Error, Transaction>> {
     this.logger.log('Creating transaction');
 
     try {
-      const transactionModel = TransactionModel.mapToModel(transaction);
-      const transactionCreated =
-        await this.transactionRepository.save(transactionModel);
+      const transactionCreated = await this.transactionRepository.save(
+        TransactionModel.mapToModel(transaction),
+      );
 
       if (!transactionCreated) {
         this.logger.error('Error when creating transaction');
@@ -74,7 +84,7 @@ export class TransactionRepository implements TransactionRepositoryInterface {
       }
 
       this.logger.log(
-        `Transaction created: ${JSON.stringify(transactionModel)}`,
+        `Transaction created: ${JSON.stringify(transactionCreated)}`,
       );
       return right(TransactionModel.mapToEntity(transactionCreated));
     } catch (error) {
@@ -103,6 +113,106 @@ export class TransactionRepository implements TransactionRepositoryInterface {
     } catch (error) {
       this.logger.error(`Error when deleting transaction: ${error}`);
       return left(new Error('Error when deleting transaction'));
+    }
+  }
+
+  async updateTransactionStatus(
+    id: string,
+    status: StatusTransaction,
+  ): Promise<Either<Error, null>> {
+    this.logger.log(`Updating status transaction status with id: ${id}`);
+
+    try {
+      await this.transactionRepository.update(id, {
+        status,
+        updated_at: new Date(),
+      });
+
+      this.logger.log(`Transaction status updated: ${id}`);
+      return right(null);
+    } catch (error) {
+      this.logger.error(`Error when updating transaction status: ${error}`);
+      return left(new Error('Error when updating transaction status'));
+    }
+  }
+
+  async createScheduledTransaction(
+    scheduledTransaction: ScheduledTransaction,
+  ): Promise<Either<Error, ScheduledTransaction>> {
+    this.logger.log(
+      `Creating scheduled transaction, ${JSON.stringify(scheduledTransaction)}`,
+    );
+
+    try {
+      const scheduledTransactionCreated =
+        await ScheduledTransactionModel.getRepository().save(
+          ScheduledTransactionModel.mapToModel(scheduledTransaction),
+        );
+
+      if (!scheduledTransactionCreated) {
+        this.logger.error('Error when creating scheduled transaction');
+        return left(new Error('Error when creating scheduled transaction'));
+      }
+
+      this.logger.log('Scheduled transaction created');
+      return right(
+        ScheduledTransactionModel.mapToEntity(scheduledTransactionCreated),
+      );
+    } catch (error) {
+      this.logger.error(`Error when creating scheduled transaction: ${error}`);
+      return left(new Error('Error when creating scheduled transaction'));
+    }
+  }
+
+  async findScheduledTransactionByTransactionId(
+    transactionId: string,
+  ): Promise<Either<Error, ScheduledTransaction | null>> {
+    this.logger.log('Finding scheduled transaction by transaction id');
+
+    try {
+      const scheduledTransaction =
+        await ScheduledTransactionModel.getRepository().findOne({
+          where: { transaction_id: transactionId },
+        });
+
+      if (!scheduledTransaction) {
+        this.logger.warn('Scheduled transaction not found');
+        return right(null);
+      }
+
+      this.logger.log(
+        `Scheduled transaction found: ${JSON.stringify(scheduledTransaction)}`,
+      );
+      return right(ScheduledTransactionModel.mapToEntity(scheduledTransaction));
+    } catch (error) {
+      this.logger.error(
+        `Error when searching for scheduled transaction: ${error}`,
+      );
+      return left(new Error('Error when searching for scheduled transaction'));
+    }
+  }
+
+  async updateScheduledTransactionStatus(
+    transactionId: string,
+    status: StatusScheduledTransaction,
+  ): Promise<Either<Error, null>> {
+    this.logger.log('Updating scheduled transaction status');
+
+    try {
+      await ScheduledTransactionModel.getRepository().update(
+        { transaction_id: transactionId },
+        { updated_at: new Date(), status: status },
+      );
+
+      this.logger.log('Scheduled transaction status updated');
+      return right(null);
+    } catch (error) {
+      this.logger.error(
+        `Error when updating scheduled transaction status: ${error}`,
+      );
+      return left(
+        new Error('Error when updating scheduled transaction status'),
+      );
     }
   }
 }

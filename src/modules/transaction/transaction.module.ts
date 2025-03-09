@@ -18,6 +18,7 @@ import { TransactionService } from './domain/services/transaction.service';
 import { TransactionProcessor } from './application/scheduled/transaction.processor';
 import { TransactionScheduler } from './application/scheduled/transaction.scheduler';
 import { TransactionQueue } from './application/scheduled/transaction.queue';
+import ScheduledTransactionModel from './infrastructure/models/scheduledTransaction.model';
 
 @Module({
   imports: [
@@ -26,7 +27,11 @@ import { TransactionQueue } from './application/scheduled/transaction.queue';
       timeout: 5000,
       maxRedirects: 5,
     }),
-    TypeOrmModule.forFeature([TransactionModel, AccountModel]),
+    TypeOrmModule.forFeature([
+      TransactionModel,
+      AccountModel,
+      ScheduledTransactionModel,
+    ]),
     EventEmitterModule.forRoot(),
     BullModule.registerQueue({ name: 'transactionQueue' }),
     BullModule.forRoot({

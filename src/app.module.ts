@@ -14,6 +14,8 @@ import { TransactionController } from './modules/transaction/infrastructure/cont
 import { CreateTransactionTable1741200787558 } from './migration/1741200787558-CreateTransactionTable';
 import TransactionModel from './modules/transaction/infrastructure/models/transaction.model';
 import { TransactionModule } from './modules/transaction/transaction.module';
+import { CreateScheduledTransactionTable1741549013470 } from './migration/1741549013470-CreateScheduledTransactionTable';
+import ScheduledTransactionModel from './modules/transaction/infrastructure/models/scheduledTransaction.model';
 
 @Module({
   imports: [
@@ -36,11 +38,13 @@ import { TransactionModule } from './modules/transaction/transaction.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [AccountModel, TransactionModel],
+      entities: [AccountModel, TransactionModel, ScheduledTransactionModel],
       migrations: [
         CreateAccountTable1741108788820,
         CreateTransactionTable1741200787558,
+        CreateScheduledTransactionTable1741549013470,
       ],
+      migrationsRun: true,
       synchronize: true,
       logging: true,
     }),

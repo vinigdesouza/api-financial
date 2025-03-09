@@ -4,12 +4,16 @@ import { TransactionProcessedEvent } from '../events/transaction-created.event';
 import { AccountRepositoryInterface } from '../../../account/domain/repository/account.repository.interface';
 import { Account } from '../../../account/domain/entity/account.entity';
 import { CustomLogger } from '../../../shared/custom.logger';
+import { TransactionRepositoryInterface } from '../../domain/repository/transaction.repository.interface';
+import { StatusTransaction } from '../../domain/entity/transaction.entity';
 
 @Injectable()
 export class TransactionListener {
   constructor(
     @Inject('AccountRepositoryInterface')
     private readonly accountRepository: AccountRepositoryInterface,
+    @Inject('TransactionRepositoryInterface')
+    private readonly transactionRepository: TransactionRepositoryInterface,
     private readonly logger: CustomLogger,
   ) {}
 
@@ -19,7 +23,13 @@ export class TransactionListener {
       `Handling TransactionProcessedEvent for account ${event.accountId}`,
     );
 
-    const { accountId, amount, transactionType, destinationAccountId } = event;
+    const {
+      accountId,
+      transactionId,
+      amount,
+      transactionType,
+      destinationAccountId,
+    } = event;
 
     const accountResult = await this.accountRepository.findById(accountId);
     if (accountResult.isLeft() || !accountResult.value) return undefined;
@@ -69,5 +79,10 @@ export class TransactionListener {
         ),
       );
     }
+
+    await this.transactionRepository.updateTransactionStatus(
+      transactionId,
+      StatusTransaction.COMPLETED,
+    );
   }
 }

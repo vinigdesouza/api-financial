@@ -39,4 +39,8 @@ export class CreateTransactionDTO {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Scheduled date must be a valid string date' })
+  scheduled_at?: string;
 }

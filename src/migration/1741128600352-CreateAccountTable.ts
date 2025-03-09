@@ -5,7 +5,7 @@ export class CreateAccountTable1741108788820 implements MigrationInterface {
     await queryRunner.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
 
     await queryRunner.query(`
-      CREATE TABLE account (
+      CREATE TABLE IF NOT EXISTS account (
         id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         account_number INT,

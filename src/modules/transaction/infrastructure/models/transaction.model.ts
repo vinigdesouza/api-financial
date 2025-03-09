@@ -4,6 +4,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import {
@@ -12,6 +13,7 @@ import {
   TransactionType,
 } from '../../domain/entity/transaction.entity';
 import AccountModel from '../../../account/infrastructure/models/account.model';
+import ScheduledTransactionModel from './scheduledTransaction.model';
 
 @Entity({ name: 'transaction' })
 export default class TransactionModel extends BaseEntity {
@@ -41,6 +43,12 @@ export default class TransactionModel extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   updated_at?: Date;
+
+  @OneToMany(
+    () => ScheduledTransactionModel,
+    (scheduledTransaction) => scheduledTransaction.transaction, // Relacionamento de volta
+  )
+  scheduledTransactions: ScheduledTransactionModel[];
 
   @ManyToOne(() => AccountModel, (account) => account.transactions, {
     onDelete: 'CASCADE',

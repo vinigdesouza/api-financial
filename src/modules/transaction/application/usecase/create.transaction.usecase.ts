@@ -15,6 +15,7 @@ import { BalanceInsufficient } from '../exceptions/BalanceInsufficient';
 import { TransactionProcessedEvent } from '../events/transaction-created.event';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CurrencyConversionService } from '../../domain/services/currency.conversion.service';
+import { TransactionService } from '../../domain/services/transaction.service';
 
 @Injectable()
 export class CreateTransactionUsecase {
@@ -23,7 +24,8 @@ export class CreateTransactionUsecase {
     private readonly transactionRepository: TransactionRepositoryInterface,
     @Inject('AccountRepositoryInterface')
     private readonly accountRepository: AccountRepositoryInterface,
-    private readonly CurrencyConversionService: CurrencyConversionService,
+    private readonly currencyConversionService: CurrencyConversionService,
+    private readonly transactionService: TransactionService,
     private readonly logger: CustomLogger,
     private readonly eventEmitter: EventEmitter2,
   ) {}
@@ -41,9 +43,11 @@ export class CreateTransactionUsecase {
     let amount = request.amount;
     const transactionType = request.transaction_type;
     const currency = request.currency;
+    const description = request.description;
+    const scheduledAt = request.scheduled_at;
 
     if (currency !== CurrencyTypes.REAL) {
-      const newAmount = await this.CurrencyConversionService.convertCurrency(
+      const newAmount = await this.currencyConversionService.convertCurrency(
         amount,
         currency,
         CurrencyTypes.REAL,
@@ -110,8 +114,8 @@ export class CreateTransactionUsecase {
       idAccount,
       amount,
       transactionType,
-      StatusTransaction.COMPLETED,
-      request.description,
+      StatusTransaction.PENDING,
+      description,
       idAccountDestination,
     );
 
@@ -126,10 +130,29 @@ export class CreateTransactionUsecase {
       return left(transactionCreated.value);
     }
 
+    if (!transactionCreated.value.id) {
+      this.logger.error('Transaction ID not found');
+      return left(new Error('Error when creating transaction'));
+    }
+
+    if (scheduledAt) {
+      this.logger.log('Scheduling transaction');
+
+      await this.transactionService.createScheduledTransaction(
+        transactionCreated.value.id,
+        new Date(scheduledAt),
+      );
+
+      return right(transactionCreated.value);
+    }
+
+    this.logger.log('Processing transaction');
+
     this.eventEmitter.emit(
       'transaction.processed',
       new TransactionProcessedEvent(
         idAccount,
+        transactionCreated.value.id,
         amount,
         transactionType,
         idAccountDestination,
