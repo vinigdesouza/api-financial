@@ -55,7 +55,7 @@ export class AccountController {
       transactionType,
       limit: limit ? parseInt(limit, 10) : 10,
       offset: offset ? parseInt(offset, 10) : 0,
-      sortBy: sortBy || 'createdAt',
+      sortBy: sortBy || 'created_at',
       sortOrder:
         sortOrder && ['ASC', 'DESC'].includes(sortOrder.toUpperCase())
           ? (sortOrder.toUpperCase() as 'ASC' | 'DESC')

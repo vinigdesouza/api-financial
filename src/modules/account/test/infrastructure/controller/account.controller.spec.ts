@@ -7,14 +7,16 @@ import {
   deleteAccount,
   fakeAccountRepository,
   findById,
-} from '../../util/mocks/account.repository.mock';
+  getAccountStatement,
+} from '../../../../shared/test/mocks/account.repository.mock';
 import { CustomLogger } from '../../../../shared/custom.logger';
 import {
   buildAccount,
   buildCreateAccountDTO,
+  buildTransaction,
   buildUpsertAccountRequest,
   fakeLogger,
-} from '../../util/common.faker';
+} from '../../../../shared/test/common.faker';
 import { left, right } from '../../../../shared/either';
 import {
   BadRequestException,
@@ -262,5 +264,77 @@ describe('AccountController', () => {
       expect(deleteAccount).toHaveBeenCalledTimes(1);
       expect(deleteAccount.mock.calls[0][0]).toStrictEqual(id);
     });
+  });
+
+  describe('Route generateAccountStatement', () => {
+    it('should throw InternalServerErrorException when repository getAccountStatement() method fails', async () => {
+      const id = faker.number.int({ min: 1, max: 3000 }).toString();
+      const start_date = '2021-10-01';
+      const end_date = '2021-10-10';
+      const errorMessage = faker.lorem.words();
+      getAccountStatement.mockResolvedValueOnce(left(new Error(errorMessage)));
+
+      await expect(
+        controller.generateAccountStatement(id, start_date, end_date),
+      ).rejects.toThrow(new InternalServerErrorException(errorMessage));
+
+      expect(getAccountStatement).toHaveBeenCalledTimes(1);
+      expect(getAccountStatement.mock.calls[0][0]).toStrictEqual({
+        accountId: undefined,
+        accountNumber: parseInt(id),
+        startDate: new Date(start_date),
+        endDate: new Date(end_date),
+        limit: 10,
+        offset: 0,
+        sortBy: 'created_at',
+        sortOrder: 'DESC',
+        transactionType: undefined,
+      });
+    });
+
+    it('should successfully return the account statement', async () => {
+      const id = faker.number.int({ min: 1, max: 3000 }).toString();
+      const start_date = '2021-10-01';
+      const end_date = '2021-10-10';
+      const account = buildAccount({ accountNumber: parseInt(id) });
+      const transactions = [
+        buildTransaction({ accountId: account.id }),
+        buildTransaction({ accountId: account.id }),
+      ];
+      account.adicionarTransaction(transactions[0]);
+      account.adicionarTransaction(transactions[1]);
+      const returnMock = account;
+      getAccountStatement.mockResolvedValueOnce(right(returnMock));
+
+      const result = await controller.generateAccountStatement(
+        id,
+        start_date,
+        end_date,
+      );
+      expect(result).toEqual(account);
+      expect(getAccountStatement).toHaveBeenCalledTimes(1);
+      expect(getAccountStatement.mock.calls[0][0]).toStrictEqual({
+        accountId: undefined,
+        accountNumber: parseInt(id),
+        startDate: new Date(start_date),
+        endDate: new Date(end_date),
+        limit: 10,
+        offset: 0,
+        sortBy: 'created_at',
+        sortOrder: 'DESC',
+        transactionType: undefined,
+      });
+    });
+
+    // it('should successfully return the account', async () => {
+    //   const id = faker.string.uuid();
+    //   const account = buildAccount({ id });
+    //   findById.mockResolvedValueOnce(right(account));
+
+    //   const result = await controller.findOne(id);
+    //   expect(result).toEqual(account);
+    //   expect(findById).toHaveBeenCalledTimes(1);
+    //   expect(findById.mock.calls[0][0]).toStrictEqual(id);
+    // });
   });
 });
