@@ -52,6 +52,7 @@ jobs:
           DATABASE_URL: postgres://postgres:vini.postgress.dev@localhost:5432/financial_db
           REDIS_HOST: localhost
           REDIS_PORT: 6379
+          SECRET_JWT: ${{ secrets.SECRET_JWT }}
           AUTH_TOKEN_ADMIN: ${{ secrets.AUTH_TOKEN_ADMIN }}
           AUTH_TOKEN_BASIC: ${{ secrets.AUTH_TOKEN_BASIC }}
           AUTH_TOKEN_INVALID: ${{ secrets.AUTH_TOKEN_INVALID }}

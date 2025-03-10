@@ -12,3 +12,4 @@ process.env.DB_PASSWORD = 'vini.postgress.dev';
 process.env.DB_DATABASE = 'financial_db';
 process.env.HOST_API_CURRENCY_CONVERSION = 'api_domain';
 process.env.REDIS_HOST = 'localhost';
+process.env.SECRET_JWT = 'my-super-secret-key-to-autenticate';
