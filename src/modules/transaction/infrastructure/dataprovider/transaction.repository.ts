@@ -20,7 +20,8 @@ export class TransactionRepository implements TransactionRepositoryInterface {
   constructor(
     @InjectRepository(TransactionModel)
     private readonly transactionRepository: Repository<TransactionModel>,
-    private readonly dataSource: DataSource,
+    @InjectRepository(ScheduledTransactionModel)
+    private readonly scheduledTransactionRepository: Repository<ScheduledTransactionModel>,
     private readonly logger: CustomLogger,
   ) {}
 
@@ -145,7 +146,7 @@ export class TransactionRepository implements TransactionRepositoryInterface {
 
     try {
       const scheduledTransactionCreated =
-        await ScheduledTransactionModel.getRepository().save(
+        await this.scheduledTransactionRepository.save(
           ScheduledTransactionModel.mapToModel(scheduledTransaction),
         );
 
@@ -171,7 +172,7 @@ export class TransactionRepository implements TransactionRepositoryInterface {
 
     try {
       const scheduledTransaction =
-        await ScheduledTransactionModel.getRepository().findOne({
+        await this.scheduledTransactionRepository.findOne({
           where: { transaction_id: transactionId },
         });
 
@@ -199,7 +200,7 @@ export class TransactionRepository implements TransactionRepositoryInterface {
     this.logger.log('Updating scheduled transaction status');
 
     try {
-      await ScheduledTransactionModel.getRepository().update(
+      await this.scheduledTransactionRepository.update(
         { transaction_id: transactionId },
         { updated_at: new Date(), status: status },
       );

@@ -17,6 +17,11 @@ import {
 import { TransactionProcessedEvent } from '../../transaction/application/events/transaction-created.event';
 import { CreateAccountDTO } from '../../account/infrastructure/dto/request/create.account.dto';
 import { UpsertAccountRequest } from '../../account/application/usecase/upsert.account.request';
+import {
+  ScheduledTransaction,
+  StatusScheduledTransaction,
+} from '../../transaction/domain/entity/scheduledTransaction.entity';
+import ScheduledTransactionModel from '../../transaction/infrastructure/models/scheduledTransaction.model';
 
 export const fakeLogger: Partial<CustomLogger> = {
   verbose: jest.fn(),
@@ -155,5 +160,42 @@ export const buildCreateAccountDTO = (
     },
     ...partial,
   });
+  return data;
+};
+
+export const buildScheduledTransaction = (
+  partial: Partial<ScheduledTransaction>,
+): ScheduledTransaction => {
+  const data: ScheduledTransaction = plainToClass(ScheduledTransaction, {
+    ...{
+      transactionId: faker.string.uuid(),
+      scheduledAt: new Date(),
+      status: StatusScheduledTransaction.PROCESSED,
+      id: faker.string.uuid(),
+      updatedAt: new Date(),
+      createdAt: new Date(),
+    },
+    ...partial,
+  });
+  return data;
+};
+
+export const buildScheduledTransactionModel = (
+  partial: Partial<ScheduledTransactionModel>,
+): ScheduledTransactionModel => {
+  const data: ScheduledTransactionModel = plainToClass(
+    ScheduledTransactionModel,
+    {
+      ...{
+        transaction_id: faker.string.uuid(),
+        scheduled_at: new Date(),
+        status: StatusTransaction.COMPLETED,
+        id: faker.string.uuid(),
+        updated_at: new Date(),
+        created_at: new Date(),
+      },
+      ...partial,
+    },
+  );
   return data;
 };
