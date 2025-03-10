@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { CustomLogger } from '../shared/custom.logger';
+import { AuthRateLimiterService } from './auth/auth-rate-limiter.service';
 
 export enum userRoles {
   ADMIN = 'admin',
@@ -32,14 +33,17 @@ declare global {
 export class JwtMiddleware implements NestMiddleware {
   constructor(
     private configService: ConfigService,
+    private readonly authRateLimiter: AuthRateLimiterService,
     private readonly logger: CustomLogger,
   ) {}
 
-  use(req: Request, res: Response, next: NextFunction) {
+  async use(req: Request, res: Response, next: NextFunction) {
     this.logger.log('JWT Middleware');
     const token = req.headers['authorization'];
+    const clientIp = req.ip || 'unknown';
 
     if (!token) {
+      await this.authRateLimiter.check(clientIp);
       throw new UnauthorizedException('Token is missing');
     }
 
@@ -56,6 +60,7 @@ export class JwtMiddleware implements NestMiddleware {
       }) as unknown as JwtPayload;
 
       if (![userRoles.ADMIN, userRoles.BASIC].includes(decoded.role)) {
+        await this.authRateLimiter.check(clientIp);
         throw new UnauthorizedException('User can`t access');
       }
       req.user = decoded;

@@ -16,6 +16,7 @@ import TransactionModel from './modules/transaction/infrastructure/models/transa
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { CreateScheduledTransactionTable1741549013470 } from './migration/1741549013470-CreateScheduledTransactionTable';
 import ScheduledTransactionModel from './modules/transaction/infrastructure/models/scheduledTransaction.model';
+import { AuthRateLimiterService } from './modules/middleware/auth/auth-rate-limiter.service';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import ScheduledTransactionModel from './modules/transaction/infrastructure/mode
     CustomLogger,
     JwtMiddleware,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    AuthRateLimiterService,
   ],
   exports: [CustomLogger],
 })
