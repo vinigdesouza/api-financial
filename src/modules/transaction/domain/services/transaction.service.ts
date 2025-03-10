@@ -8,6 +8,7 @@ import {
 } from '../entity/scheduledTransaction.entity';
 import { TransactionProcessedEvent } from '../../application/events/transaction-created.event';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Either, left, right } from '../../../shared/either';
 
 @Injectable()
 export class TransactionService {
@@ -19,22 +20,33 @@ export class TransactionService {
     private readonly logger: CustomLogger,
   ) {}
 
-  async createScheduledTransaction(transactionId: string, scheduledAt: Date) {
+  async createScheduledTransaction(
+    transactionId: string,
+    scheduledAt: Date,
+  ): Promise<Either<Error, undefined>> {
     this.logger.log(
       `Creating scheduled transaction, transactionId: ${transactionId}`,
     );
-    await this.transactionRepository.createScheduledTransaction(
-      ScheduledTransaction.create(
-        transactionId,
-        scheduledAt,
-        StatusScheduledTransaction.PENDING,
-      ),
-    );
+    const createScheduledTransaction =
+      await this.transactionRepository.createScheduledTransaction(
+        ScheduledTransaction.create(
+          transactionId,
+          scheduledAt,
+          StatusScheduledTransaction.PENDING,
+        ),
+      );
+
+    if (createScheduledTransaction.isLeft()) {
+      this.logger.error('Error creating scheduled transaction');
+      return left(new Error(createScheduledTransaction.value.message));
+    }
 
     await this.transactionScheduler.scheduleTransaction(
       transactionId,
       scheduledAt,
     );
+
+    return right(undefined);
   }
 
   async processScheduleTransaction(transactionId: string): Promise<void> {

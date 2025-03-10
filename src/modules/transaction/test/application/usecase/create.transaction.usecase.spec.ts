@@ -34,6 +34,11 @@ import {
 } from '../../../../transaction/domain/entity/transaction.entity';
 import { AccountDoesNotExist } from '../../../../account/application/exceptions/AccountDoesNotExist';
 import { BalanceInsufficient } from '../../../application/exceptions/BalanceInsufficient';
+import { TransactionService } from '../../../../transaction/domain/services/transaction.service';
+import {
+  createScheduledTransaction,
+  fakeTransactionService,
+} from '../../../../shared/test/mocks/transaction.service.mock';
 
 describe('CreateTransactionUsecase', () => {
   let useCase: CreateTransactionUsecase;
@@ -55,6 +60,10 @@ describe('CreateTransactionUsecase', () => {
         {
           provide: CurrencyConversionService,
           useValue: fakeCurrencyConversionService,
+        },
+        {
+          provide: TransactionService,
+          useValue: fakeTransactionService,
         },
         {
           provide: CustomLogger,
@@ -214,7 +223,7 @@ describe('CreateTransactionUsecase', () => {
         accountId: request.account_id,
         amount: 200,
         transactionType: TransactionType.DEPOSIT,
-        status: StatusTransaction.COMPLETED,
+        status: StatusTransaction.PENDING,
         description: request.description,
         destinationAccountId: request.destination_account_id,
         updatedAt: undefined,
@@ -229,15 +238,20 @@ describe('CreateTransactionUsecase', () => {
       currency: CurrencyTypes.REAL,
     });
 
-    const transactionCreated = buildTransaction({
+    const transactionToBeCreated = buildTransaction({
       id: undefined,
       accountId: request.account_id,
       amount: 200,
       transactionType: TransactionType.DEPOSIT,
-      status: StatusTransaction.COMPLETED,
+      status: StatusTransaction.PENDING,
       description: request.description,
       destinationAccountId: request.destination_account_id,
       updatedAt: undefined,
+    });
+
+    const transactionCreated = buildTransaction({
+      ...transactionToBeCreated,
+      id: faker.string.uuid(),
     });
 
     findByIdAccount.mockResolvedValueOnce(
@@ -251,7 +265,7 @@ describe('CreateTransactionUsecase', () => {
     expect(findByIdAccount).toHaveBeenCalledTimes(1);
     expect(findByIdAccount.mock.calls[0][0]).toStrictEqual(request.account_id);
     expect(create).toHaveBeenCalledTimes(1);
-    expect(create.mock.calls[0][0]).toStrictEqual(transactionCreated);
+    expect(create.mock.calls[0][0]).toStrictEqual(transactionToBeCreated);
     expect(emit).toHaveBeenCalledTimes(1);
     expect(emit).toHaveBeenCalledWith(
       'transaction.processed',
@@ -262,5 +276,62 @@ describe('CreateTransactionUsecase', () => {
         destinationAccountId: request.destination_account_id,
       }),
     );
+  });
+
+  it('should create a transaction and a scheduled transaction succcesfuly', async () => {
+    const scheduledAt = '2025-02-01';
+    const request = buildCreateTransactionDTO({
+      amount: 200,
+      transaction_type: TransactionType.DEPOSIT,
+      currency: CurrencyTypes.REAL,
+      scheduled_at: scheduledAt,
+    });
+
+    const transactionToBeCreated = buildTransaction({
+      id: undefined,
+      accountId: request.account_id,
+      amount: 200,
+      transactionType: TransactionType.DEPOSIT,
+      status: StatusTransaction.PENDING,
+      description: request.description,
+      destinationAccountId: request.destination_account_id,
+      updatedAt: undefined,
+    });
+
+    const transactionCreated = buildTransaction({
+      ...transactionToBeCreated,
+      id: faker.string.uuid(),
+    });
+
+    findByIdAccount.mockResolvedValueOnce(
+      right(buildAccount({ id: request.account_id })),
+    );
+    create.mockReturnValueOnce(right(transactionCreated));
+    createScheduledTransaction.mockReturnValueOnce(right(undefined));
+
+    const result = await useCase.handle(request);
+    expect(result).toEqual(right(transactionCreated));
+    expect(convertCurrency).toHaveBeenCalledTimes(0);
+    expect(findByIdAccount).toHaveBeenCalledTimes(1);
+    expect(findByIdAccount.mock.calls[0][0]).toStrictEqual(request.account_id);
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(create.mock.calls[0][0]).toStrictEqual(transactionToBeCreated);
+    expect(createScheduledTransaction).toHaveBeenCalledTimes(1);
+    expect(createScheduledTransaction.mock.calls[0][0]).toStrictEqual(
+      transactionCreated.id,
+    );
+    expect(createScheduledTransaction.mock.calls[0][1]).toStrictEqual(
+      new Date(scheduledAt),
+    );
+    expect(emit).toHaveBeenCalledTimes(0);
+    // expect(emit).toHaveBeenCalledWith(
+    //   'transaction.processed',
+    //   expect.objectContaining({
+    //     accountId: request.account_id,
+    //     amount: request.amount,
+    //     transactionType: request.transaction_type,
+    //     destinationAccountId: request.destination_account_id,
+    //   }),
+    // );
   });
 });
