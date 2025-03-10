@@ -48,6 +48,7 @@ export default class ScheduledTransactionModel extends BaseEntity {
       model.scheduled_at,
       model.status as StatusScheduledTransaction,
       model.created_at,
+      model.id,
     );
     return transaction;
   }
