@@ -14,7 +14,6 @@ describe('Entity ScheduledTransactionModel', () => {
     );
     expect(scheduledTransaction.id).toBe(scheduledTransaction.id);
     expect(scheduledTransaction.status).toBe(scheduledTransaction.status);
-    expect(scheduledTransaction.updatedAt).toBeInstanceOf(Date);
     expect(scheduledTransaction.createdAt).toBeInstanceOf(Date);
   });
 });

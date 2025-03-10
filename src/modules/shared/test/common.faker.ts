@@ -172,8 +172,6 @@ export const buildScheduledTransaction = (
       transactionId: faker.string.uuid(),
       scheduledAt: new Date(),
       status: StatusScheduledTransaction.PROCESSED,
-      id: faker.string.uuid(),
-      updatedAt: new Date(),
       createdAt: new Date(),
     },
     ...partial,

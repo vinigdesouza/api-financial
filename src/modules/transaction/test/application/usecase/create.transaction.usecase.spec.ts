@@ -324,14 +324,5 @@ describe('CreateTransactionUsecase', () => {
       new Date(scheduledAt),
     );
     expect(emit).toHaveBeenCalledTimes(0);
-    // expect(emit).toHaveBeenCalledWith(
-    //   'transaction.processed',
-    //   expect.objectContaining({
-    //     accountId: request.account_id,
-    //     amount: request.amount,
-    //     transactionType: request.transaction_type,
-    //     destinationAccountId: request.destination_account_id,
-    //   }),
-    // );
   });
 });

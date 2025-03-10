@@ -55,7 +55,9 @@ export class TransactionService {
       await this.transactionRepository.findById(transactionId);
 
     if (transaction.isLeft()) {
-      this.logger.error('Transaction not found');
+      this.logger.error(
+        `Transaction not found, error: ${transaction.value.message}`,
+      );
       return undefined;
     }
     if (transaction.value === null) {
