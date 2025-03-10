@@ -17,7 +17,8 @@ import { TransactionType } from '../src/modules/transaction/domain/entity/transa
 describe('AccountController (e2e)', () => {
   let app: INestApplication;
   let transactionRepository: TransactionRepositoryInterface;
-  const token = process.env.AUTH_TOKEN;
+  const token = process.env.AUTH_TOKEN_ADMIN;
+  const token_basic = process.env.AUTH_TOKEN_BASIC;
   const tokenInvalid = process.env.AUTH_TOKEN_INVALID;
 
   beforeAll(async () => {
@@ -201,7 +202,7 @@ describe('AccountController (e2e)', () => {
       expect(response.body.error).toEqual('Bad Request');
     });
 
-    it('should return BadRequestException', async () => {
+    it('should return NotFoundException', async () => {
       const idAccount = faker.string.uuid();
       const createTransactionDTO = buildCreateTransactionDTO({
         account_id: idAccount,
@@ -217,6 +218,24 @@ describe('AccountController (e2e)', () => {
 
       expect(response.body.message).toEqual('Acount does not exist');
       expect(response.body.error).toEqual('Not Found');
+    });
+
+    it('should return Unauthorized when is using token user basic', async () => {
+      const idAccount = faker.string.uuid();
+      const createTransactionDTO = buildCreateTransactionDTO({
+        account_id: idAccount,
+        amount: 1200,
+        transaction_type: TransactionType.WITHDRAW,
+      });
+
+      const response = await request(app.getHttpServer())
+        .post('/transaction')
+        .send(createTransactionDTO)
+        .set(`Authorization`, `Bearer ${token_basic}`)
+        .expect(401);
+
+      expect(response.body.message).toEqual('Access restricted to admins only');
+      expect(response.body.error).toEqual('Unauthorized');
     });
   });
 

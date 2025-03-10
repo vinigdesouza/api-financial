@@ -14,7 +14,7 @@ import TransactionModel from '../src/modules/transaction/infrastructure/models/t
 
 describe('AccountController (e2e)', () => {
   let app: INestApplication;
-  const token = process.env.AUTH_TOKEN;
+  const token = process.env.AUTH_TOKEN_BASIC;
   const tokenInvalid = process.env.AUTH_TOKEN_INVALID;
 
   beforeAll(async () => {

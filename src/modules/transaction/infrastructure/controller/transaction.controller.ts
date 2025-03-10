@@ -10,6 +10,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { CustomLogger } from '../../../shared/custom.logger';
 import { TransactionRepositoryInterface } from '../../domain/repository/transaction.repository.interface';
@@ -18,6 +19,7 @@ import { CreateTransactionDTO } from '../dto/create.transaction.dto';
 import { CreateTransactionUsecase } from '../../application/usecase/create.transaction.usecase';
 import { AccountDoesNotExist } from '../../../account/application/exceptions/AccountDoesNotExist';
 import { BalanceInsufficient } from '../../application/exceptions/BalanceInsufficient';
+import { AdminGuard } from '../../../middleware/guards/admin.guard';
 
 @Controller('transaction')
 export class TransactionController {
@@ -80,6 +82,7 @@ export class TransactionController {
   }
 
   @Post()
+  @UseGuards(AdminGuard)
   async create(
     @Body() createTransactionDto: CreateTransactionDTO,
   ): Promise<Error | NotFoundException | BadRequestException | undefined> {

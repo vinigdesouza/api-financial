@@ -8,10 +8,15 @@ import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { CustomLogger } from '../shared/custom.logger';
 
+export enum userRoles {
+  ADMIN = 'admin',
+  BASIC = 'basic',
+}
+
 interface JwtPayload {
   sub: number;
-  email: string;
-  admin: boolean;
+  name: string;
+  role: userRoles;
 }
 
 declare global {
@@ -50,7 +55,7 @@ export class JwtMiddleware implements NestMiddleware {
         ignoreExpiration: true,
       }) as unknown as JwtPayload;
 
-      if (!decoded.admin) {
+      if (![userRoles.ADMIN, userRoles.BASIC].includes(decoded.role)) {
         throw new UnauthorizedException('User can`t access');
       }
       req.user = decoded;
