@@ -4,11 +4,12 @@ import { left, right } from '../../../../shared/either';
 import { faker } from '@faker-js/faker/.';
 import {
   buildAccount,
+  buildTransaction,
   buildTransactionProcessedEvent,
   fakeLogger,
 } from '../../../../shared/test/common.faker';
 import {
-  CurrencyTypes,
+  StatusTransaction,
   TransactionType,
 } from '../../../../transaction/domain/entity/transaction.entity';
 import { TransactionListener } from '../../../../transaction/application/events/transaction.listener';
@@ -17,6 +18,10 @@ import {
   findById,
   update,
 } from '../../../../shared/test/mocks/account.repository.mock';
+import {
+  fakeTransactionRepository,
+  updateTransactionStatus,
+} from '../../../../shared/test/mocks/transaction.repository.mock';
 
 describe('CurrencyGateway', () => {
   let listener: TransactionListener;
@@ -30,6 +35,10 @@ describe('CurrencyGateway', () => {
         {
           provide: 'AccountRepositoryInterface',
           useValue: fakeAccountRepository,
+        },
+        {
+          provide: 'TransactionRepositoryInterface',
+          useValue: fakeTransactionRepository,
         },
         {
           provide: CustomLogger,
@@ -93,8 +102,18 @@ describe('CurrencyGateway', () => {
       accountBalance: account.accountBalance + event.amount,
     });
 
+    const transaction = buildTransaction({
+      id: event.accountId,
+    });
+    const transactionUpdated = buildTransaction({
+      ...transaction,
+      status: StatusTransaction.COMPLETED,
+      updatedAt: new Date(),
+    });
+
     findById.mockResolvedValueOnce(right(account));
     update.mockResolvedValueOnce(right(accountUpdated));
+    updateTransactionStatus.mockResolvedValueOnce(right(transactionUpdated));
 
     await expect(
       listener.handleTransactionProcessed(event),
@@ -103,6 +122,13 @@ describe('CurrencyGateway', () => {
     expect(findById.mock.calls[0][0]).toStrictEqual(event.accountId);
     expect(update).toHaveBeenCalledTimes(1);
     expect(update.mock.calls[0][0]).toStrictEqual(accountUpdated);
+    expect(updateTransactionStatus).toHaveBeenCalledTimes(1);
+    expect(updateTransactionStatus.mock.calls[0][0]).toStrictEqual(
+      event.transactionId,
+    );
+    expect(updateTransactionStatus.mock.calls[0][1]).toStrictEqual(
+      StatusTransaction.COMPLETED,
+    );
   });
 
   it('should update main account and destination account when transaction type TRANSFER', async () => {
@@ -131,12 +157,22 @@ describe('CurrencyGateway', () => {
       accountBalance: destinationAccount.accountBalance + event.amount,
     });
 
+    const transaction = buildTransaction({
+      id: event.accountId,
+    });
+    const transactionUpdated = buildTransaction({
+      ...transaction,
+      status: StatusTransaction.COMPLETED,
+      updatedAt: new Date(),
+    });
+
     findById
       .mockImplementationOnce(() => right(mainAccount))
       .mockImplementationOnce(() => right(destinationAccount));
     update
       .mockImplementationOnce(() => right(mainAccountUpdated))
       .mockImplementationOnce(() => right(destinationAccountUpdated));
+    updateTransactionStatus.mockResolvedValueOnce(right(transactionUpdated));
 
     await expect(
       listener.handleTransactionProcessed(event),
@@ -147,5 +183,8 @@ describe('CurrencyGateway', () => {
     expect(update).toHaveBeenCalledTimes(2);
     expect(update.mock.calls[0][0]).toStrictEqual(mainAccountUpdated);
     expect(update.mock.calls[1][0]).toStrictEqual(destinationAccountUpdated);
+    expect(updateTransactionStatus.mock.calls[0][1]).toStrictEqual(
+      StatusTransaction.COMPLETED,
+    );
   });
 });

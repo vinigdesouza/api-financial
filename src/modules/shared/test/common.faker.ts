@@ -124,6 +124,7 @@ export const buildTransactionProcessedEvent = (
     {
       ...{
         accountId: faker.string.uuid(),
+        transactionId: faker.string.uuid(),
         amount: faker.number.int({ min: 1, max: 30000 }),
         transactionType: TransactionType.DEPOSIT,
       },
