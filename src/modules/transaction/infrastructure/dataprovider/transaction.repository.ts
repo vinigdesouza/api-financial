@@ -1,4 +1,4 @@
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Either, left, right } from '../../../shared/either';
 import { Injectable } from '@nestjs/common';
