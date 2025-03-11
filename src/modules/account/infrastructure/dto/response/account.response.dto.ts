@@ -1,6 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { AccountType } from '../../..//domain/entity/account.entity';
-import { TransactionResponseDto } from '../../../../transaction/infrastructure/dto/response/transaction.response.dto';
 
 export class AccountResponseDto {
   @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
