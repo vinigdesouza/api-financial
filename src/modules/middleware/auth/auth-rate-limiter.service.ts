@@ -14,9 +14,9 @@ export class AuthRateLimiterService {
 
     this.rateLimiter = new RateLimiterRedis({
       storeClient: redisClient,
-      points: 5, // Máximo de 5 tentativas
+      points: 15, // Máximo de 5 tentativas
       duration: 60 * 3, // Contabiliza tentativas em 5 minutos
-      blockDuration: 60 * 3, // Bloqueia por 3 minutos após o limite
+      blockDuration: 60 * 1, // Bloqueia por 3 minutos após o limite
       keyPrefix: 'jwt_fail',
     });
   }

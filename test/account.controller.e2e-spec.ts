@@ -152,7 +152,7 @@ describe('AccountController (e2e)', () => {
 
     it('should return BadRequestException', async () => {
       const account = buildAccountModel({});
-      AccountModel.save(account);
+      await AccountModel.save(account);
       const createAccountDto = {
         name: 'Test Account',
         account_number: account.account_number,

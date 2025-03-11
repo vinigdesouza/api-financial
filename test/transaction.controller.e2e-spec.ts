@@ -14,7 +14,7 @@ import {
 import TransactionModel from '../src/modules/transaction/infrastructure/models/transaction.model';
 import { TransactionType } from '../src/modules/transaction/domain/entity/transaction.entity';
 
-describe('AccountController (e2e)', () => {
+describe('TransactionController (e2e)', () => {
   let app: INestApplication;
   let transactionRepository: TransactionRepositoryInterface;
   const token = process.env.AUTH_TOKEN_ADMIN;

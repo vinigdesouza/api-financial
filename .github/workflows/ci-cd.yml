@@ -56,7 +56,7 @@ jobs:
           AUTH_TOKEN_ADMIN: ${{ secrets.AUTH_TOKEN_ADMIN }}
           AUTH_TOKEN_BASIC: ${{ secrets.AUTH_TOKEN_BASIC }}
           AUTH_TOKEN_INVALID: ${{ secrets.AUTH_TOKEN_INVALID }}
-        run: npm run test:e2e
+        run: npm run test:e2e --detectOpenHandles
 
       - name: 🏗️ Gerar build
         run: npm run build

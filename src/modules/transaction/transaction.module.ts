@@ -19,6 +19,7 @@ import { TransactionProcessor } from './application/scheduled/transaction.proces
 import { TransactionScheduler } from './application/scheduled/transaction.scheduler';
 import { TransactionQueue } from './application/scheduled/transaction.queue';
 import ScheduledTransactionModel from './infrastructure/models/scheduledTransaction.model';
+import { NotificationGateway } from '../shared/gateway/notification.gateway';
 
 @Module({
   imports: [
@@ -64,12 +65,14 @@ import ScheduledTransactionModel from './infrastructure/models/scheduledTransact
     TransactionProcessor,
     TransactionScheduler,
     TransactionQueue,
+    NotificationGateway,
   ],
   exports: [
     'TransactionRepositoryInterface',
     CreateTransactionUsecase,
     TransactionService,
     TransactionScheduler,
+    NotificationGateway,
   ],
 })
 export class TransactionModule {}
