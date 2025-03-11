@@ -2,7 +2,7 @@
 
 API de transaçãocões e contas bancárias.
 
-## Project setup
+## Primeiros passos
 
 Para rodar o projeto com Docker, utilize o comando abaixo. Ele irá instalar as dependências e subir o banco PostgreSQL e o Redis:
 
