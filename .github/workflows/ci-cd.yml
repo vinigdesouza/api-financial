@@ -29,25 +29,25 @@ jobs:
       - name: ⬇️ Checkout do código
         uses: actions/checkout@v4
 
-      - name: 🟢 Instalar Node.js
+      - name: 🟢 Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: 📦 Instalar dependências
+      - name: 📦 Install dependencies
         run: npm install
 
-      - name: 🔎 Rodar lint
+      - name: 🔎 Run lint
         run: npm run lint
 
-      - name: 🧪 Rodar testes
+      - name: 🧪 Run unit tests
         env:
           DATABASE_URL: postgres://postgres:vini.postgress.dev@localhost:5432/financial_db
           REDIS_HOST: localhost
           REDIS_PORT: 6379
         run: npm run test
 
-      - name: Run E2E Tests
+      - name: Run E2E tests
         env:
           DATABASE_URL: postgres://postgres:vini.postgress.dev@localhost:5432/financial_db
           REDIS_HOST: localhost
@@ -58,7 +58,7 @@ jobs:
           AUTH_TOKEN_INVALID: ${{ secrets.AUTH_TOKEN_INVALID }}
         run: npm run test:e2e --detectOpenHandles
 
-      - name: 🏗️ Gerar build
+      - name: 🏗️ Generate build
         run: npm run build
 
   cd:
@@ -70,7 +70,7 @@ jobs:
       - name: ⬇️ Checkout do código
         uses: actions/checkout@v4
 
-      - name: 🔑 Login no Docker Hub
+      - name: 🔑 Login at Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: 📦 Construir e enviar imagem para Docker Hub
