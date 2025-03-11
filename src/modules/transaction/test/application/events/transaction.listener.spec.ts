@@ -7,6 +7,7 @@ import {
   buildTransaction,
   buildTransactionProcessedEvent,
   fakeLogger,
+  fakeNotificacaoGateway,
 } from '../../../../shared/test/common.faker';
 import {
   StatusTransaction,
@@ -22,8 +23,9 @@ import {
   fakeTransactionRepository,
   updateTransactionStatus,
 } from '../../../../shared/test/mocks/transaction.repository.mock';
+import { NotificationGateway } from '../../../../shared/gateway/notification.gateway';
 
-describe('CurrencyGateway', () => {
+describe('TransactionListener', () => {
   let listener: TransactionListener;
 
   beforeEach(async () => {
@@ -43,6 +45,10 @@ describe('CurrencyGateway', () => {
         {
           provide: CustomLogger,
           useValue: fakeLogger,
+        },
+        {
+          provide: NotificationGateway,
+          useValue: fakeNotificacaoGateway,
         },
       ],
     }).compile();
@@ -129,6 +135,17 @@ describe('CurrencyGateway', () => {
     expect(updateTransactionStatus.mock.calls[0][1]).toStrictEqual(
       StatusTransaction.COMPLETED,
     );
+    expect(fakeNotificacaoGateway.sendNotification).toHaveBeenCalledTimes(1);
+    expect(fakeNotificacaoGateway.sendNotification).toHaveBeenCalledWith(
+      'transactionCompleted',
+      {
+        accountId: event.accountId,
+        newBalance: accountUpdated.accountBalance,
+        transactionId: event.transactionId,
+        transactionType: event.transactionType,
+        amount: event.amount,
+      },
+    );
   });
 
   it('should update main account and destination account when transaction type TRANSFER', async () => {
@@ -185,6 +202,17 @@ describe('CurrencyGateway', () => {
     expect(update.mock.calls[1][0]).toStrictEqual(destinationAccountUpdated);
     expect(updateTransactionStatus.mock.calls[0][1]).toStrictEqual(
       StatusTransaction.COMPLETED,
+    );
+    expect(fakeNotificacaoGateway.sendNotification).toHaveBeenCalledTimes(1);
+    expect(fakeNotificacaoGateway.sendNotification).toHaveBeenCalledWith(
+      'transactionCompleted',
+      {
+        accountId: event.accountId,
+        newBalance: mainAccountUpdated.accountBalance,
+        transactionId: event.transactionId,
+        transactionType: event.transactionType,
+        amount: event.amount,
+      },
     );
   });
 });

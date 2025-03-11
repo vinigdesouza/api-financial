@@ -20,6 +20,14 @@ import { CreateTransactionUsecase } from '../../application/usecase/create.trans
 import { AccountDoesNotExist } from '../../../account/application/exceptions/AccountDoesNotExist';
 import { BalanceInsufficient } from '../../application/exceptions/BalanceInsufficient';
 import { AdminGuard } from '../../../middleware/guards/admin.guard';
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
+import { TransactionResponseDto } from '../dto/response/transaction.response.dto';
 
 @Controller('transaction')
 export class TransactionController {
@@ -31,6 +39,9 @@ export class TransactionController {
   ) {}
 
   @Get(':id')
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiOkResponse({ type: TransactionResponseDto })
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<
@@ -56,6 +67,9 @@ export class TransactionController {
   }
 
   @Get('account/:accountId')
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiOkResponse({ type: TransactionResponseDto, isArray: true })
   async findByAccount(
     @Param('accountId', ParseUUIDPipe) accountId: string,
   ): Promise<
@@ -83,9 +97,19 @@ export class TransactionController {
 
   @Post()
   @UseGuards(AdminGuard)
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @ApiNotFoundResponse({ description: 'Not found' })
+  @ApiBadRequestResponse({ description: 'Bad request' })
+  @ApiCreatedResponse()
   async create(
     @Body() createTransactionDto: CreateTransactionDTO,
-  ): Promise<Error | NotFoundException | BadRequestException | undefined> {
+  ): Promise<
+    | Error
+    | InternalServerErrorException
+    | NotFoundException
+    | BadRequestException
+    | undefined
+  > {
     this.logger.log('Creating transaction');
 
     const response =
@@ -111,6 +135,8 @@ export class TransactionController {
   }
 
   @Delete(':id')
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @ApiOkResponse()
   async delete(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<InternalServerErrorException | undefined> {

@@ -275,7 +275,11 @@ describe('AccountController', () => {
       getAccountStatement.mockResolvedValueOnce(left(new Error(errorMessage)));
 
       await expect(
-        controller.generateAccountStatement(id, start_date, end_date),
+        controller.generateAccountStatement({
+          account_number: id,
+          start_date,
+          end_date,
+        }),
       ).rejects.toThrow(new InternalServerErrorException(errorMessage));
 
       expect(getAccountStatement).toHaveBeenCalledTimes(1);
@@ -306,11 +310,11 @@ describe('AccountController', () => {
       const returnMock = account;
       getAccountStatement.mockResolvedValueOnce(right(returnMock));
 
-      const result = await controller.generateAccountStatement(
-        id,
+      const result = await controller.generateAccountStatement({
+        account_number: id,
         start_date,
         end_date,
-      );
+      });
       expect(result).toEqual(account);
       expect(getAccountStatement).toHaveBeenCalledTimes(1);
       expect(getAccountStatement.mock.calls[0][0]).toStrictEqual({
@@ -325,16 +329,5 @@ describe('AccountController', () => {
         transactionType: undefined,
       });
     });
-
-    // it('should successfully return the account', async () => {
-    //   const id = faker.string.uuid();
-    //   const account = buildAccount({ id });
-    //   findById.mockResolvedValueOnce(right(account));
-
-    //   const result = await controller.findOne(id);
-    //   expect(result).toEqual(account);
-    //   expect(findById).toHaveBeenCalledTimes(1);
-    //   expect(findById.mock.calls[0][0]).toStrictEqual(id);
-    // });
   });
 });

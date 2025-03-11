@@ -22,7 +22,19 @@ import { InvalidAccountDataError } from '../../application/exceptions/InvalidAcc
 import { UpdateAccountUsecase } from '../../application/usecase/update.account.usecase';
 import { AccountDoesNotExist } from '../../application/exceptions/AccountDoesNotExist';
 import { Account } from '../../domain/entity/account.entity';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiQuery,
+} from '@nestjs/swagger';
+import { AccountStatementDto } from '../dto/request/account-statement.dto';
+import { AccountResponseDto } from '../dto/response/account.response.dto';
+import { AccountStatementResponseDto } from '../dto/response/account.statement.response.dto';
 
+@ApiBearerAuth()
 @Controller('account')
 export class AccountController {
   constructor(
@@ -34,31 +46,79 @@ export class AccountController {
   ) {}
 
   @Get('statement')
+  @ApiQuery({
+    name: 'account_number',
+    required: true,
+    example: '123456',
+    description: 'Número da conta',
+  })
+  @ApiQuery({
+    name: 'start_date',
+    required: true,
+    example: '2025-03-01T00:00:00.000Z',
+    description: 'Data inicial',
+  })
+  @ApiQuery({
+    name: 'end_date',
+    required: true,
+    example: '2025-03-10T23:59:59.999Z',
+    description: 'Data final',
+  })
+  @ApiQuery({
+    name: 'account_id',
+    required: false,
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: 'ID da conta',
+  })
+  @ApiQuery({
+    name: 'transaction_type',
+    required: false,
+    example: 'DEPOSIT',
+    description: 'Tipo de transação',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    example: 10,
+    description: 'Limite de registros',
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    example: 0,
+    description: 'Offset para paginação',
+  })
+  @ApiQuery({
+    name: 'sort_by',
+    required: false,
+    example: 'createdAt',
+    description: 'Campo para ordenação',
+  })
+  @ApiQuery({
+    name: 'sort_order',
+    required: false,
+    enum: ['ASC', 'DESC'],
+    example: 'ASC',
+    description: 'Ordem de ordenação',
+  })
+  @ApiOkResponse({ type: AccountStatementResponseDto, isArray: true })
   async generateAccountStatement(
-    @Query('account_number') accountNumber: string,
-    @Query('start_date') startDate: string,
-    @Query('end_date') endDate: string,
-    @Query('account_id') accountId?: string,
-    @Query('transaction_type') transactionType?: string,
-    @Query('limit') limit?: string,
-    @Query('offset') offset?: string,
-    @Query('sort_by') sortBy?: string,
-    @Query('sort_order') sortOrder?: 'ASC' | 'DESC',
+    @Query() filters: AccountStatementDto,
   ): Promise<InternalServerErrorException | Account[]> {
     this.logger.log('Generating account statement');
 
     const statement = await this.accountRepository.getAccountStatement({
-      accountNumber: parseInt(accountNumber),
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
-      accountId: accountId,
-      transactionType,
-      limit: limit ? parseInt(limit, 10) : 10,
-      offset: offset ? parseInt(offset, 10) : 0,
-      sortBy: sortBy || 'created_at',
+      accountNumber: parseInt(filters.account_number),
+      startDate: new Date(filters.start_date),
+      endDate: new Date(filters.end_date),
+      accountId: filters.account_id,
+      transactionType: filters.transaction_type,
+      limit: filters.limit ? parseInt(filters.limit) : 10,
+      offset: filters.offset ? parseInt(filters.offset) : 0,
+      sortBy: filters.sort_by || 'created_at',
       sortOrder:
-        sortOrder && ['ASC', 'DESC'].includes(sortOrder.toUpperCase())
-          ? (sortOrder.toUpperCase() as 'ASC' | 'DESC')
+        filters.sort_order && ['ASC', 'DESC'].includes(filters.sort_order)
+          ? filters.sort_order
           : 'DESC',
     });
 
@@ -74,6 +134,9 @@ export class AccountController {
   }
 
   @Get(':id')
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiOkResponse({ type: AccountResponseDto })
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<
@@ -99,9 +162,14 @@ export class AccountController {
   }
 
   @Post()
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  @ApiOkResponse({ description: 'Created' })
   async create(
     @Body() createAccountDto: CreateAccountDTO,
-  ): Promise<Error | BadRequestException | undefined> {
+  ): Promise<
+    Error | InternalServerErrorException | BadRequestException | undefined
+  > {
     this.logger.log('Creating account');
     this.logger.log(`Creating account for user: ${createAccountDto.name}`);
 
@@ -134,10 +202,20 @@ export class AccountController {
   }
 
   @Put(':id')
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiOkResponse({ type: AccountResponseDto })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUsetDto: CreateAccountDTO,
-  ): Promise<Error | BadRequestException | NotFoundException | Account> {
+  ): Promise<
+    | Error
+    | InternalServerErrorException
+    | BadRequestException
+    | NotFoundException
+    | Account
+  > {
     this.logger.log('Updating account controller');
     this.logger.log(`Updating account for user: ${updateUsetDto.name}`);
 
@@ -175,6 +253,8 @@ export class AccountController {
   }
 
   @Delete(':id')
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @ApiOkResponse()
   async delete(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<InternalServerErrorException | undefined> {

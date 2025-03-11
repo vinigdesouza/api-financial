@@ -22,6 +22,7 @@ import {
   StatusScheduledTransaction,
 } from '../../transaction/domain/entity/scheduledTransaction.entity';
 import ScheduledTransactionModel from '../../transaction/infrastructure/models/scheduledTransaction.model';
+import { NotificationGateway } from '../gateway/notification.gateway';
 
 export const fakeLogger: Partial<CustomLogger> = {
   verbose: jest.fn(),
@@ -29,6 +30,10 @@ export const fakeLogger: Partial<CustomLogger> = {
   log: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
+};
+
+export const fakeNotificacaoGateway: Partial<NotificationGateway> = {
+  sendNotification: jest.fn(),
 };
 
 export const buildCreateTransactionDTO = (

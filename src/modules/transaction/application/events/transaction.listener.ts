@@ -6,6 +6,7 @@ import { Account } from '../../../account/domain/entity/account.entity';
 import { CustomLogger } from '../../../shared/custom.logger';
 import { TransactionRepositoryInterface } from '../../domain/repository/transaction.repository.interface';
 import { StatusTransaction } from '../../domain/entity/transaction.entity';
+import { NotificationGateway } from '../../../shared/gateway/notification.gateway';
 
 @Injectable()
 export class TransactionListener {
@@ -15,6 +16,7 @@ export class TransactionListener {
     @Inject('TransactionRepositoryInterface')
     private readonly transactionRepository: TransactionRepositoryInterface,
     private readonly logger: CustomLogger,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   @OnEvent('transaction.processed')
@@ -83,6 +85,18 @@ export class TransactionListener {
     await this.transactionRepository.updateTransactionStatus(
       transactionId,
       StatusTransaction.COMPLETED,
+    );
+
+    this.notificationGateway.sendNotification('transactionCompleted', {
+      accountId,
+      newBalance: newAccountBalance,
+      transactionId,
+      transactionType,
+      amount,
+    });
+
+    this.logger.log(
+      `WebSocket notification sent for transaction ${transactionId}`,
     );
   }
 }
