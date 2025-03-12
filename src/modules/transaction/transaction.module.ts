@@ -20,6 +20,7 @@ import { TransactionScheduler } from './application/scheduled/transaction.schedu
 import { TransactionQueue } from './application/scheduled/transaction.queue';
 import ScheduledTransactionModel from './infrastructure/models/scheduledTransaction.model';
 import { NotificationGateway } from '../shared/gateway/notification.gateway';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { NotificationGateway } from '../shared/gateway/notification.gateway';
       ScheduledTransactionModel,
     ]),
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     BullModule.registerQueue({ name: 'transactionQueue' }),
     BullModule.forRoot({
       connection: {

@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Either, left, right } from '../../../shared/either';
 import { Injectable } from '@nestjs/common';
@@ -66,6 +66,36 @@ export class TransactionRepository implements TransactionRepositoryInterface {
     } catch (error) {
       this.logger.error(`Error when searching for transactions: ${error}`);
       return left(new Error('Error when searching for transactions'));
+    }
+  }
+
+  async findByDateRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Either<Error, Transaction[]>> {
+    this.logger.log(
+      `Finding transactions by date range: ${startDate.toString()} - ${endDate.toString()}`,
+    );
+
+    try {
+      const transactions = await this.transactionRepository.find({
+        where: { created_at: Between(startDate, endDate) },
+      });
+
+      this.logger.log(`Transactions found
+      : ${JSON.stringify(transactions)}`);
+      return right(
+        transactions.map((transaction) =>
+          TransactionModel.mapToEntity(transaction),
+        ),
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error when searching for transactions by date range: ${error}`,
+      );
+      return left(
+        new Error('Error when searching for transactions by date range'),
+      );
     }
   }
 

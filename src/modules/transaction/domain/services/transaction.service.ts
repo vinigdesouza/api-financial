@@ -9,6 +9,11 @@ import {
 import { TransactionProcessedEvent } from '../../application/events/transaction-created.event';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Either, left, right } from '../../../shared/either';
+import { createObjectCsvWriter } from 'csv-writer';
+import { format } from 'date-fns';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class TransactionService {
@@ -116,5 +121,57 @@ export class TransactionService {
         transaction.value.destinationAccountId,
       ),
     );
+  }
+
+  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
+  async generateMonthlyReport() {
+    const startDate = new Date();
+    startDate.setDate(1);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1);
+    endDate.setDate(0);
+    endDate.setHours(23, 59, 59, 999);
+
+    this.logger.log(
+      `Finding transaction from ${startDate.toISOString()} to ${endDate.toISOString()}`,
+    );
+
+    const transactionsResult = await this.transactionRepository.findByDateRange(
+      startDate,
+      endDate,
+    );
+
+    if (transactionsResult.isLeft()) {
+      this.logger.error('Error fetching transactions for report');
+      return;
+    }
+
+    const transactions = transactionsResult.value;
+    this.logger.log(`Transactions found: ${JSON.stringify(transactions)}`);
+
+    const fileName = `report-monthly-transaction${format(new Date(), 'yyyy-MM')}.csv`;
+
+    const dirPath = path.resolve(process.cwd(), 'reports');
+    console.log('File path:', path.join(dirPath, fileName));
+
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
+
+    const csvWriter = createObjectCsvWriter({
+      path: `./reports/${fileName}`,
+      header: [
+        { id: 'id', title: 'ID' },
+        { id: 'transactionType', title: 'Tipo' },
+        { id: 'amount', title: 'Valor' },
+        { id: 'createdAt', title: 'Data' },
+      ],
+    });
+
+    await csvWriter.writeRecords(transactions);
+
+    this.logger.log(`Report saved at ./reports/${fileName}`);
   }
 }
