@@ -38,7 +38,7 @@ jobs:
         run: npm install
 
       - name: 🔍 Run security audit
-        run: npm audit --audit-level=moderate
+        run: npm audit
 
       - name: 🔎 Run lint
         run: npm run lint

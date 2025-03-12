@@ -2,11 +2,17 @@ FROM node:18
 
 WORKDIR /app
 
+ENV TZ=America/Sao_Paulo
+
+RUN apt-get update && apt-get install -y tzdata && rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock.json ./
 
 RUN npm install
 
-RUN npm audit --audit-level=moderate
+RUN npm audit
+
+RUN apt-get update && apt-get install -y tzdata
 
 COPY . .
 
