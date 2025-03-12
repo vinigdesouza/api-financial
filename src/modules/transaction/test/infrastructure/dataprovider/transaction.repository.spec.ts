@@ -2,7 +2,7 @@
 
 import { CustomLogger } from '../../../../shared/custom.logger';
 
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker/.';
 import { left, right } from '../../../../shared/either';
@@ -166,6 +166,67 @@ describe('AccountRepository', () => {
       expect(transactionRepositoryMock.find).toHaveBeenCalledTimes(1);
       expect(transactionRepositoryMock.find).toHaveBeenCalledWith({
         where: { account_id: idAccount },
+      });
+    });
+  });
+
+  describe('Método findByDateRange', () => {
+    it('Should return ERROR when find fail', async () => {
+      const errorMessage = faker.lorem.words();
+      transactionRepositoryMock.find = jest
+        .fn()
+        .mockRejectedValueOnce(new Error(errorMessage));
+
+      const endDate = faker.date.recent();
+      const startDate = faker.date.past();
+
+      await expect(
+        repository.findByDateRange(startDate, endDate),
+      ).resolves.toStrictEqual(
+        left(new Error('Error when searching for transactions by date range')),
+      );
+      expect(transactionRepositoryMock.find).toHaveBeenCalledTimes(1);
+      expect(transactionRepositoryMock.find).toHaveBeenCalledWith({
+        where: { created_at: Between(startDate, endDate) },
+      });
+    });
+
+    it('Should return [] when find return nothing', async () => {
+      transactionRepositoryMock.find = jest.fn().mockResolvedValueOnce([]);
+
+      const endDate = faker.date.recent();
+      const startDate = faker.date.past();
+
+      await expect(
+        repository.findByDateRange(startDate, endDate),
+      ).resolves.toStrictEqual(right([]));
+      expect(transactionRepositoryMock.find).toHaveBeenCalledTimes(1);
+      expect(transactionRepositoryMock.find).toHaveBeenCalledWith({
+        where: { created_at: Between(startDate, endDate) },
+      });
+    });
+
+    it('Should return array of Transaction entity when find() finding transaction', async () => {
+      const endDate = faker.date.recent();
+      const startDate = faker.date.past();
+      const transactionModel = buildTransactionModel({});
+      const transactionModel1 = buildTransactionModel({});
+      transactionRepositoryMock.find = jest
+        .fn()
+        .mockResolvedValueOnce([transactionModel, transactionModel1]);
+
+      await expect(
+        repository.findByDateRange(startDate, endDate),
+      ).resolves.toStrictEqual(
+        right(
+          [transactionModel, transactionModel1].map((transaction) =>
+            TransactionModel.mapToEntity(transaction),
+          ),
+        ),
+      );
+      expect(transactionRepositoryMock.find).toHaveBeenCalledTimes(1);
+      expect(transactionRepositoryMock.find).toHaveBeenCalledWith({
+        where: { created_at: Between(startDate, endDate) },
       });
     });
   });
