@@ -124,7 +124,7 @@ export class TransactionService {
   }
 
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
-  async generateMonthlyReport() {
+  async generateMonthlyReport(): Promise<void> {
     const startDate = new Date();
     startDate.setDate(1);
     startDate.setHours(0, 0, 0, 0);
@@ -145,6 +145,11 @@ export class TransactionService {
 
     if (transactionsResult.isLeft()) {
       this.logger.error('Error fetching transactions for report');
+      return undefined;
+    }
+
+    if (transactionsResult.value.length === 0) {
+      this.logger.error('No transactions found for report');
       return;
     }
 
@@ -154,8 +159,6 @@ export class TransactionService {
     const fileName = `report-monthly-transaction${format(new Date(), 'yyyy-MM')}.csv`;
 
     const dirPath = path.resolve(process.cwd(), 'reports');
-    console.log('File path:', path.join(dirPath, fileName));
-
     if (!fs.existsSync(dirPath)) {
       fs.mkdirSync(dirPath, { recursive: true });
     }

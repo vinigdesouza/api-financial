@@ -11,6 +11,7 @@ import { TransactionService } from '../../../domain/services/transaction.service
 import {
   createScheduledTransaction,
   fakeTransactionRepository,
+  findByDateRange,
   findById,
   findScheduledTransactionByTransactionId,
   updateScheduledTransactionStatus,
@@ -304,6 +305,65 @@ describe('TransactionService', () => {
           destinationAccountId: transaction.destinationAccountId,
         }),
       );
+    });
+  });
+
+  describe('method generateMonthlyReport', () => {
+    it('should return an undefined when repository findByDateRange return error', async () => {
+      const startDate = new Date();
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 1);
+      endDate.setDate(0);
+      endDate.setHours(23, 59, 59, 999);
+      const errorMesssage = faker.lorem.words();
+      findByDateRange.mockResolvedValueOnce(left(new Error(errorMesssage)));
+
+      const result = await service.generateMonthlyReport();
+      expect(result).toEqual(undefined);
+      expect(findByDateRange).toHaveBeenCalledTimes(1);
+      expect(findByDateRange.mock.calls[0][0]).toStrictEqual(startDate);
+      expect(findByDateRange.mock.calls[0][1]).toStrictEqual(endDate);
+    });
+
+    it('should return an undefined when repository findByDateRange return no transaction', async () => {
+      const startDate = new Date();
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 1);
+      endDate.setDate(0);
+      endDate.setHours(23, 59, 59, 999);
+      findByDateRange.mockResolvedValueOnce(right([]));
+
+      const result = await service.generateMonthlyReport();
+      expect(result).toEqual(undefined);
+      expect(findByDateRange).toHaveBeenCalledTimes(1);
+      expect(findByDateRange.mock.calls[0][0]).toStrictEqual(startDate);
+      expect(findByDateRange.mock.calls[0][1]).toStrictEqual(endDate);
+    });
+
+    it('should return an undefined when repository findByDateRange array of transactions', async () => {
+      const startDate = new Date();
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 1);
+      endDate.setDate(0);
+      endDate.setHours(23, 59, 59, 999);
+
+      const transactions = [buildTransaction({})];
+      findByDateRange.mockResolvedValueOnce(right(transactions));
+
+      const result = await service.generateMonthlyReport();
+      expect(result).toEqual(undefined);
+      expect(findByDateRange).toHaveBeenCalledTimes(1);
+      expect(findByDateRange.mock.calls[0][0]).toStrictEqual(startDate);
+      expect(findByDateRange.mock.calls[0][1]).toStrictEqual(endDate);
     });
   });
 });
