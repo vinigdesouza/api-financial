@@ -8,15 +8,15 @@ export class AuthRateLimiterService {
 
   constructor() {
     const redisClient = new Redis({
-      host: process.env.REDIS_HOST, // Alterar se necessário
+      host: process.env.REDIS_HOST,
       port: Number(process.env.REDIS_PORT),
     });
 
     this.rateLimiter = new RateLimiterRedis({
       storeClient: redisClient,
-      points: 15, // Máximo de 5 tentativas
-      duration: 60 * 3, // Contabiliza tentativas em 5 minutos
-      blockDuration: 60 * 1, // Bloqueia por 3 minutos após o limite
+      points: 15, // Máximo de 15 tentativas
+      duration: 60 * 3, // Contabiliza tentativas em 3 minutos
+      blockDuration: 60 * 1, // Bloqueia por 1 minuto após o limite
       keyPrefix: 'jwt_fail',
     });
   }

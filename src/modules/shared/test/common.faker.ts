@@ -24,6 +24,14 @@ import {
 import ScheduledTransactionModel from '../../transaction/infrastructure/models/scheduledTransaction.model';
 import { NotificationGateway } from '../gateway/notification.gateway';
 
+export const fakeConfigService = {
+  get: jest.fn(),
+};
+
+export const fakeAuthRateLimiterService = {
+  check: jest.fn(),
+};
+
 export const fakeLogger: Partial<CustomLogger> = {
   verbose: jest.fn(),
   debug: jest.fn(),
